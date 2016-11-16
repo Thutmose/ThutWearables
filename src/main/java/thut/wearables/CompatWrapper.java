@@ -11,7 +11,7 @@ import net.minecraft.util.EnumHand;
 
 public class CompatWrapper
 {
-    public static final ItemStack nullStack = null;
+    public static final ItemStack nullStack = ItemStack.field_190927_a;
 
     public static ItemStack fromTag(NBTTagCompound tag)
     {
