@@ -79,22 +79,6 @@ public class ThutWearables
     {
         MinecraftForge.EVENT_BUS.register(new thut.wearables.baubles.BaublesCompat());
     }
-    //
-    // @Method(modid = "Botania")
-    // @EventHandler
-    // public void botania_old(FMLPreInitializationEvent e)
-    // {
-    // MinecraftForge.EVENT_BUS.register(new
-    // thut.wearables.baubles.BotaniaCompat());
-    // }
-    //
-    // @Method(modid = "botania")
-    // @EventHandler
-    // public void botania(FMLPreInitializationEvent e)
-    // {
-    // MinecraftForge.EVENT_BUS.register(new
-    // thut.wearables.baubles.BotaniaCompat());
-    // }
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent e)

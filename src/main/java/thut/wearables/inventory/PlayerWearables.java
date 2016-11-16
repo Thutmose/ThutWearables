@@ -1,5 +1,6 @@
 package thut.wearables.inventory;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,45 +14,46 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentTranslation;
+import thut.wearables.CompatWrapper;
 import thut.wearables.EnumWearable;
 
 public class PlayerWearables implements IWearableInventory, IInventory
 {
     private static class WearableSlot
     {
-        final EnumWearable type;
-        final ItemStack[]  slots;
+        final EnumWearable    type;
+        final List<ItemStack> slots;
 
         WearableSlot(EnumWearable type)
         {
             this.type = type;
-            this.slots = new ItemStack[type.slots];
+            this.slots = CompatWrapper.makeList(type.slots);
         }
 
         ItemStack getStack(int slot)
         {
-            return slots[slot];
+            return slots.get(slot);
         }
 
         ItemStack getStack()
         {
-            for (int i = 0; i < slots.length; i++)
-                if (slots[i] != null) return slots[i];
-            return null;
+            for (int i = 0; i < slots.size(); i++)
+                if (CompatWrapper.isValid(slots.get(i))) return slots.get(i);
+            return CompatWrapper.nullStack;
         }
 
         void setStack(int slot, ItemStack stack)
         {
-            slots[slot] = stack;
+            slots.set(slot, stack);
         }
 
         ItemStack removeStack()
         {
-            for (int i = 0; i < slots.length; i++)
-                if (slots[i] != null)
+            for (int i = 0; i < slots.size(); i++)
+                if (CompatWrapper.isValid(slots.get(i)))
                 {
-                    ItemStack stack = slots[i];
-                    slots[i] = null;
+                    ItemStack stack = getStack(i);
+                    setStack(i, CompatWrapper.nullStack);
                     return stack;
                 }
             return null;
@@ -59,10 +61,10 @@ public class PlayerWearables implements IWearableInventory, IInventory
 
         boolean addStack(ItemStack stack)
         {
-            for (int i = 0; i < slots.length; i++)
-                if (slots[i] == null)
+            for (int i = 0; i < slots.size(); i++)
+                if (!CompatWrapper.isValid(slots.get(i)))
                 {
-                    slots[i] = stack;
+                    setStack(i, stack);
                     return true;
                 }
             return false;
@@ -72,10 +74,10 @@ public class PlayerWearables implements IWearableInventory, IInventory
         {
             NBTTagCompound tag = new NBTTagCompound();
             tag.setByte("type", (byte) type.ordinal());
-            for (int n = 0; n < slots.length; n++)
+            for (int n = 0; n < slots.size(); n++)
             {
-                ItemStack i = slots[n];
-                if (i != null)
+                ItemStack i = getStack(n);
+                if (CompatWrapper.isValid(i))
                 {
                     NBTTagCompound tag1 = new NBTTagCompound();
                     i.writeToNBT(tag1);
@@ -87,26 +89,26 @@ public class PlayerWearables implements IWearableInventory, IInventory
 
         void loadFromNBT(NBTTagCompound tag)
         {
-            for (int n = 0; n < slots.length; n++)
+            for (int n = 0; n < slots.size(); n++)
             {
                 NBTBase temp = tag.getTag("slot" + n);
                 if (temp instanceof NBTTagCompound)
                 {
                     NBTTagCompound tag1 = (NBTTagCompound) temp;
-                    slots[n] = ItemStack.loadItemStackFromNBT(tag1);
+                    setStack(n, CompatWrapper.fromTag(tag1));
                 }
             }
         }
 
         public ItemStack removeStack(int subIndex)
         {
-            if (slots[subIndex] != null)
+            if (CompatWrapper.isValid(slots.get(subIndex)))
             {
-                ItemStack stack = slots[subIndex];
-                slots[subIndex] = null;
+                ItemStack stack = slots.get(subIndex);
+                setStack(subIndex, CompatWrapper.nullStack);
                 return stack;
             }
-            return null;
+            return CompatWrapper.nullStack;
         }
     }
 
@@ -136,9 +138,9 @@ public class PlayerWearables implements IWearableInventory, IInventory
         Set<ItemStack> ret = Sets.newHashSet();
         for (WearableSlot slot : slots.values())
         {
-            for (int i = 0; i < slot.slots.length; i++)
+            for (int i = 0; i < slot.slots.size(); i++)
             {
-                if (slot.slots[i] != null) ret.add(slot.slots[i]);
+                if (CompatWrapper.isValid(slot.slots.get(i))) ret.add(slot.slots.get(i));
             }
         }
         return ret;
@@ -298,6 +300,12 @@ public class PlayerWearables implements IWearableInventory, IInventory
     @Override
     public void clear()
     {
+    }
+
+    //TODO find out what this is.
+    public boolean func_191420_l()
+    {
+        return false;
     }
 
 }

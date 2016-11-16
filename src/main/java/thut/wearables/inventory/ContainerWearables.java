@@ -17,6 +17,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import thut.wearables.CompatWrapper;
 import thut.wearables.EnumWearable;
 import thut.wearables.ThutWearables;
 
@@ -168,7 +169,7 @@ public class ContainerWearables extends Container
                 @Override
                 public boolean isItemValid(@Nullable ItemStack stack)
                 {
-                    if (stack == null)
+                    if (!CompatWrapper.isValid(stack))
                     {
                         return false;
                     }
@@ -252,7 +253,7 @@ public class ContainerWearables extends Container
     @Override
     public ItemStack transferStackInSlot(EntityPlayer par1EntityPlayer, int index)
     {
-        ItemStack itemstack = null;
+        ItemStack itemstack = CompatWrapper.nullStack;
         Slot slot = this.inventorySlots.get(index);
 
         if (slot != null && slot.getHasStack())
@@ -263,13 +264,13 @@ public class ContainerWearables extends Container
             int numRows = 3;
             if (index < numRows * 9)
             {
-                if (!this.mergeItemStack(itemstack1, numRows * 9, this.inventorySlots.size(), false)) { return null; }
+                if (!this.mergeItemStack(itemstack1, numRows * 9, this.inventorySlots.size(), false)) { return CompatWrapper.nullStack; }
             }
-            else if (!this.mergeItemStack(itemstack1, 0, numRows * 9, false)) { return null; }
+            else if (!this.mergeItemStack(itemstack1, 0, numRows * 9, false)) { return CompatWrapper.nullStack; }
 
-            if (itemstack1.stackSize == 0)
+            if (!CompatWrapper.isValid(itemstack1))
             {
-                slot.putStack((ItemStack) null);
+                slot.putStack(CompatWrapper.nullStack);
             }
             else
             {

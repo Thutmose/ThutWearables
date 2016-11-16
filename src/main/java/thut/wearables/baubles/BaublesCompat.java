@@ -5,7 +5,6 @@ import java.util.List;
 import baubles.api.BaublesApi;
 import baubles.api.IBauble;
 import baubles.api.cap.IBaublesItemHandler;
-import baubles.common.Baubles;
 import baubles.common.container.ContainerPlayerExpanded;
 import baubles.common.container.SlotBauble;
 import net.minecraft.entity.EntityLivingBase;
@@ -13,6 +12,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IContainerListener;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
@@ -41,14 +41,14 @@ public class BaublesCompat
     }
 
     @SubscribeEvent
-    public void onItemCapabilityAttach(AttachCapabilitiesEvent.Item event)
+    public void onItemCapabilityAttach(AttachCapabilitiesEvent<Item> event)
     {
         if (botania)
         {
             MinecraftForge.EVENT_BUS.unregister(this);
             return;
         }
-        if (event.getItem() instanceof IBauble
+        if (event.getObject() instanceof IBauble
                 && !event.getCapabilities().containsKey(new ResourceLocation("wearable_compat:bauble")))
         {
             event.addCapability(new ResourceLocation("wearable_compat:bauble"), new WearableBauble());

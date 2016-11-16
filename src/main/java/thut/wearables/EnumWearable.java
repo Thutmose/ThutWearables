@@ -96,8 +96,7 @@ public enum EnumWearable
             {
                 if (itemstack != null && player instanceof EntityPlayer)
                 {
-                    itemstack.getItem().onItemRightClick(itemstack, player.worldObj, (EntityPlayer) player,
-                            EnumHand.MAIN_HAND);
+                    CompatWrapper.rightClickWith(itemstack, (EntityPlayer) player, EnumHand.MAIN_HAND);
                 }
             }
         });
