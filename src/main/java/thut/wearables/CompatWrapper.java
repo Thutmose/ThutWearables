@@ -67,10 +67,17 @@ public class CompatWrapper
         stack.getItem().onItemRightClick(player.worldObj, player, hand);
         player.setHeldItem(hand, old);
     }
-    
+
     public static NBTTagCompound getTag(ItemStack stack, String name, boolean create)
     {
-        return stack.getSubCompound(name, create);
+        NBTTagCompound ret = stack.getSubCompound(name);
+        if (ret == null)
+        {
+            if (!stack.hasTagCompound()) stack.setTagCompound(new NBTTagCompound());
+            ret = new NBTTagCompound();
+            stack.getTagCompound().setTag(name, ret);
+        }
+        return ret;
     }
 
 }
