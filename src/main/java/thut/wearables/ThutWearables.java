@@ -44,8 +44,8 @@ import thut.wearables.network.PacketSyncWearables;
 @Mod(modid = ThutWearables.MODID, name = "Thut Wearables", version = ThutWearables.VERSION)
 public class ThutWearables
 {
-    public static final String MODID   = "thut_wearables";
-    public static final String VERSION = "1.0.0";
+    public static final String MODID   = Reference.MODID;
+    public static final String VERSION = Reference.VERSION;
 
     public static PlayerWearables getWearables(EntityLivingBase wearer)
     {
@@ -79,20 +79,22 @@ public class ThutWearables
     {
         MinecraftForge.EVENT_BUS.register(new thut.wearables.baubles.BaublesCompat());
     }
-
-    @Method(modid = "Botania")
-    @EventHandler
-    public void botania_old(FMLPreInitializationEvent e)
-    {
-        MinecraftForge.EVENT_BUS.register(new thut.wearables.baubles.BotaniaCompat());
-    }
-
-    @Method(modid = "botania")
-    @EventHandler
-    public void botania(FMLPreInitializationEvent e)
-    {
-        MinecraftForge.EVENT_BUS.register(new thut.wearables.baubles.BotaniaCompat());
-    }
+    //
+    // @Method(modid = "Botania")
+    // @EventHandler
+    // public void botania_old(FMLPreInitializationEvent e)
+    // {
+    // MinecraftForge.EVENT_BUS.register(new
+    // thut.wearables.baubles.BotaniaCompat());
+    // }
+    //
+    // @Method(modid = "botania")
+    // @EventHandler
+    // public void botania(FMLPreInitializationEvent e)
+    // {
+    // MinecraftForge.EVENT_BUS.register(new
+    // thut.wearables.baubles.BotaniaCompat());
+    // }
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent e)

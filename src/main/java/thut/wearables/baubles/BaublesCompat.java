@@ -2,11 +2,12 @@ package thut.wearables.baubles;
 
 import java.util.List;
 
+import baubles.api.BaublesApi;
 import baubles.api.IBauble;
+import baubles.api.cap.IBaublesItemHandler;
+import baubles.common.Baubles;
 import baubles.common.container.ContainerPlayerExpanded;
-import baubles.common.container.InventoryBaubles;
 import baubles.common.container.SlotBauble;
-import baubles.common.lib.PlayerHandler;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
@@ -19,7 +20,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.event.entity.player.PlayerOpenContainerEvent;
+import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.fml.relauncher.Side;
@@ -55,12 +56,13 @@ public class BaublesCompat
     }
 
     @SubscribeEvent
-    public void openContainer(PlayerOpenContainerEvent event)
+    public void openContainer(PlayerContainerEvent.Open event)
     {
         Container cont = event.getEntityPlayer().openContainer;
         if (!(cont instanceof ContainerWearables || cont instanceof ContainerPlayerExpanded)) return;
         // System.out.println(event.getEntityPlayer().openContainer);
         List<IContainerListener> listeners = ReflectionHelper.getPrivateValue(Container.class, cont, "listeners");
+        System.out.println(listeners);
         if (listeners.size() == 1)
         {
             final EntityPlayerMP player = (EntityPlayerMP) listeners.get(0);
@@ -85,13 +87,8 @@ public class BaublesCompat
                         // Putting into slot
                         if (stack.getItem() instanceof IBauble)
                         {
-                            IInventory baubles = new InventoryBaubles(player);
-                            if (!player.worldObj.isRemote)
-                            {
-                                ((InventoryBaubles) baubles).stackList = PlayerHandler
-                                        .getPlayerBaubles(player).stackList;
-                            }
-                            baubles.setInventorySlotContents(slotId, stack.copy());
+                            IBaublesItemHandler baubles = BaublesApi.getBaublesHandler(player);
+                            baubles.setStackInSlot(slotId, stack.copy());
                         }
                     }
                     else
@@ -100,13 +97,9 @@ public class BaublesCompat
                         stack = player.inventory.getItemStack();
                         if (stack.getItem() instanceof IBauble)
                         {
-                            IInventory baubles = new InventoryBaubles(player);
-                            if (!player.worldObj.isRemote)
-                            {
-                                ((InventoryBaubles) baubles).stackList = PlayerHandler
-                                        .getPlayerBaubles(player).stackList;
-                            }
-                            baubles.setInventorySlotContents(slotId, null);
+
+                            IBaublesItemHandler baubles = BaublesApi.getBaublesHandler(player);
+                            baubles.setStackInSlot(slotId, null);
                         }
                     }
 
