@@ -15,30 +15,29 @@ public class CompatWrapper
 
     public static ItemStack fromTag(NBTTagCompound tag)
     {
-        return ItemStack.loadItemStackFromNBT(tag);
+        return new ItemStack(tag);
     }
 
     public static ItemStack copy(ItemStack in)
     {
-        return ItemStack.copyItemStack(in);
+        return in.copy();
     }
 
     public static ItemStack setStackSize(ItemStack stack, int amount)
     {
         if (amount <= 0) { return nullStack; }
-        stack.stackSize = amount;
+        stack.func_190920_e(amount);
         return stack;
     }
 
     public static int getStackSize(ItemStack stack)
     {
-        if (stack == nullStack || stack.stackSize < 0 || stack.getItem() == null) { return 0; }
-        return stack.stackSize;
+        return stack.func_190916_E();
     }
 
     public static boolean isValid(ItemStack stack)
     {
-        return getStackSize(stack) > 0;
+        return !stack.func_190926_b();
     }
 
     public static ItemStack validate(ItemStack in)
@@ -49,8 +48,8 @@ public class CompatWrapper
 
     public static int increment(ItemStack in, int amt)
     {
-        in.stackSize += amt;
-        return in.stackSize;
+        in.func_190917_f(amt);
+        return in.func_190916_E();
     }
 
     public static List<ItemStack> makeList(int size)
@@ -63,7 +62,10 @@ public class CompatWrapper
 
     public static void rightClickWith(ItemStack stack, EntityPlayer player, EnumHand hand)
     {
-        stack.getItem().onItemRightClick(stack, player.worldObj, player, hand);
+        ItemStack old = player.getHeldItem(hand);
+        player.setHeldItem(hand, stack);
+        stack.getItem().onItemRightClick(player.worldObj, player, hand);
+        player.setHeldItem(hand, old);
     }
 
 }
