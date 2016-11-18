@@ -61,7 +61,8 @@ public class BaublesCompat
         Container cont = event.getEntityPlayer().openContainer;
         if (!(cont instanceof ContainerWearables || cont instanceof ContainerPlayerExpanded)) return;
         // System.out.println(event.getEntityPlayer().openContainer);
-        List<IContainerListener> listeners = ReflectionHelper.getPrivateValue(Container.class, cont, "listeners");
+        List<IContainerListener> listeners = ReflectionHelper.getPrivateValue(Container.class, cont, "listeners",
+                "field_75149_d");
         System.out.println(listeners);
         if (listeners.size() == 1)
         {
