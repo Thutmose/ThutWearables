@@ -1,7 +1,12 @@
 package thut.wearables;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+
+import com.google.common.collect.Maps;
 
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -22,8 +27,8 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
-import net.minecraftforge.fml.common.Optional.Method;
 import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -32,6 +37,7 @@ import net.minecraftforge.fml.common.network.IGuiHandler;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
+import thut.wearables.CompatClass.Phase;
 import thut.wearables.client.gui.GuiEvents;
 import thut.wearables.client.gui.GuiWearables;
 import thut.wearables.client.render.WearableEventHandler;
@@ -57,27 +63,44 @@ public class ThutWearables
         WearableHandler.getInstance().save(wearer.getCachedUniqueIdString());
     }
 
-    public static SimpleNetworkWrapper packetPipeline = new SimpleNetworkWrapper(MODID);
+    public static SimpleNetworkWrapper                    packetPipeline = new SimpleNetworkWrapper(MODID);
 
     @SidedProxy
-    public static CommonProxy          proxy;
+    public static CommonProxy                             proxy;
     @Instance(value = MODID)
-    public static ThutWearables        instance;
+    public static ThutWearables                           instance;
 
-    private boolean                    overworldRules = true;
+    private boolean                                       overworldRules = true;
+    Map<CompatClass.Phase, Set<java.lang.reflect.Method>> initMethods    = Maps.newHashMap();
 
-    @Method(modid = "Baubles")
-    @EventHandler
-    public void baubles_old(FMLPreInitializationEvent e)
+    public ThutWearables()
     {
-        MinecraftForge.EVENT_BUS.register(new thut.wearables.baubles.BaublesCompat());
+        for (Phase phase : Phase.values())
+        {
+            initMethods.put(phase, new HashSet<java.lang.reflect.Method>());
+        }
     }
 
-    @Method(modid = "baubles")
-    @EventHandler
-    public void baubles(FMLPreInitializationEvent e)
+    public void init(FMLInitializationEvent evt)
     {
-        MinecraftForge.EVENT_BUS.register(new thut.wearables.baubles.BaublesCompat());
+        doPhase(Phase.INIT, evt);
+    }
+
+    private void doPhase(Phase pre, Object event)
+    {
+        for (java.lang.reflect.Method m : initMethods.get(pre))
+        {
+            try
+            {
+                CompatClass comp = m.getAnnotation(CompatClass.class);
+                if (comp.takesEvent()) m.invoke(null, event);
+                else m.invoke(null);
+            }
+            catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
+            {
+                e.printStackTrace();
+            }
+        }
     }
 
     @EventHandler

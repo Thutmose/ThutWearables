@@ -21,10 +21,12 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.player.PlayerContainerEvent;
+import net.minecraftforge.fml.common.Optional.Method;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import thut.wearables.CompatClass;
 import thut.wearables.EnumWearable;
 import thut.wearables.IActiveWearable;
 import thut.wearables.ThutWearables;
@@ -35,6 +37,20 @@ import thut.wearables.inventory.PlayerWearables;
 public class BaublesCompat
 {
     public static boolean botania = false;
+
+    @Method(modid = "Baubles")
+    @CompatClass
+    public static void baubles_old()
+    {
+        MinecraftForge.EVENT_BUS.register(new thut.wearables.baubles.BaublesCompat());
+    }
+
+    @Method(modid = "baubles")
+    @CompatClass
+    public static void baubles()
+    {
+        MinecraftForge.EVENT_BUS.register(new thut.wearables.baubles.BaublesCompat());
+    }
 
     public BaublesCompat()
     {
