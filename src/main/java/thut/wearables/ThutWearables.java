@@ -195,7 +195,7 @@ public class ThutWearables
             if (stack != null)
             {
                 player.dropItem(stack.copy(), true, false);
-                cap.setInventorySlotContents(i, null);
+                cap.setInventorySlotContents(i, CompatWrapper.nullStack);
             }
         }
         syncWearables(player);
