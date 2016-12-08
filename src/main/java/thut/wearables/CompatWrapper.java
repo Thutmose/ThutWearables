@@ -8,6 +8,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
+import net.minecraftforge.oredict.OreDictionary;
 
 public class CompatWrapper
 {
@@ -61,11 +62,16 @@ public class CompatWrapper
         return ret;
     }
 
+    public static List<ItemStack> getOres(String name)
+    {
+        return OreDictionary.getOres(name);
+    }
+
     public static void rightClickWith(ItemStack stack, EntityPlayer player, EnumHand hand)
     {
         stack.getItem().onItemRightClick(stack, player.worldObj, player, hand);
     }
-    
+
     public static NBTTagCompound getTag(ItemStack stack, String name, boolean create)
     {
         return stack.getSubCompound(name, create);
