@@ -26,6 +26,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.oredict.OreDictionary;
 
 public class CompatWrapper
 {
@@ -125,6 +126,11 @@ public class CompatWrapper
     public static List<ItemStack> makeList(int size)
     {
         return NonNullList.<ItemStack> func_191197_a(size, ItemStack.field_190927_a);
+    }
+
+    public static List<ItemStack> getOres(String name)
+    {
+        return OreDictionary.getOres(name);
     }
 
     public static void rightClickWith(ItemStack stack, EntityPlayer player, EnumHand hand)
