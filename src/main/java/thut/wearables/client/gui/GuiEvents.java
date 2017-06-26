@@ -89,7 +89,7 @@ public class GuiEvents
                 active = event.getGui() instanceof GuiWearables;
                 if (active)
                 {
-                    event.getGui().mc.displayGuiScreen(new GuiInventory(event.getGui().mc.thePlayer));
+                    event.getGui().mc.displayGuiScreen(new GuiInventory(event.getGui().mc.player));
                 }
                 else
                 {

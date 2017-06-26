@@ -185,7 +185,7 @@ public class ThutWearables
     public void dropLoot(PlayerDropsEvent event)
     {
         EntityPlayer player = event.getEntityPlayer();
-        GameRules rules = overworldRules ? player.getServer().worldServerForDimension(0).getGameRules()
+        GameRules rules = overworldRules ? player.getServer().getWorld(0).getGameRules()
                 : player.getEntityWorld().getGameRules();
         if (rules.getBoolean("keepInventory")) return;
         PlayerWearables cap = ThutWearables.getWearables(player);
@@ -213,7 +213,7 @@ public class ThutWearables
                 EnumWearable.tick(wearer, wearables.getStackInSlot(i), i);
             }
         }
-        if (event.getEntityLiving().worldObj.isRemote) return;
+        if (event.getEntityLiving().world.isRemote) return;
         if (event.getEntity() instanceof EntityPlayer)
         {
             EntityPlayer player = (EntityPlayer) event.getEntity();
@@ -221,7 +221,7 @@ public class ThutWearables
             if (!syncSchedule.isEmpty() && syncSchedule.contains(player.getUniqueID()) && player.ticksExisted > 20)
             {
                 syncWearables(player);
-                for (EntityPlayer player2 : event.getEntity().worldObj.playerEntities)
+                for (EntityPlayer player2 : event.getEntity().world.playerEntities)
                 {
                     packetPipeline.sendTo(new PacketSyncWearables(player2), (EntityPlayerMP) player);
                 }

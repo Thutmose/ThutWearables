@@ -27,17 +27,17 @@ public class GuiWearableButton extends GuiButton
     }
 
     @Override
-    public void drawButton(Minecraft mc, int xx, int yy)
+    public void drawButton(Minecraft mc, int xx, int yy, float partialTicks)
     {
         if (this.visible)
         {
             int potionShift = getPotionShift(mc);
 
-            FontRenderer fontrenderer = mc.fontRendererObj;
+            FontRenderer fontrenderer = mc.fontRenderer;
             mc.getTextureManager().bindTexture(GuiWearables.background);
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-            this.hovered = xx >= this.xPosition + potionShift && yy >= this.yPosition
-                    && xx < this.xPosition + this.width + potionShift && yy < this.yPosition + this.height;
+            this.hovered = xx >= this.x + potionShift && yy >= this.y
+                    && xx < this.x + this.width + potionShift && yy < this.y + this.height;
             int k = this.getHoverState(this.hovered);
             GlStateManager.enableBlend();
             GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
@@ -45,13 +45,13 @@ public class GuiWearableButton extends GuiButton
 
             if (k == 1)
             {
-                this.drawTexturedModalRect(this.xPosition + potionShift + 1, this.yPosition, 0, 247, 9, 9);
+                this.drawTexturedModalRect(this.x + potionShift + 1, this.y, 0, 247, 9, 9);
             }
             else
             {
-                this.drawTexturedModalRect(this.xPosition + potionShift + 1, this.yPosition, 9, 247, 9, 9);
-                this.drawCenteredString(fontrenderer, this.displayString, this.xPosition + 5 + potionShift,
-                        this.yPosition + this.height, this.packedFGColour);
+                this.drawTexturedModalRect(this.x + potionShift + 1, this.y, 9, 247, 9, 9);
+                this.drawCenteredString(fontrenderer, this.displayString, this.x + 5 + potionShift,
+                        this.y + this.height, this.packedFGColour);
             }
 
             this.mouseDragged(mc, xx, yy);

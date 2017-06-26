@@ -27,7 +27,7 @@ public class PacketGui implements IMessage, IMessageHandler<PacketGui, IMessage>
     public void toBytes(ByteBuf buffer)
     {
         PacketBuffer buf = new PacketBuffer(buffer);
-        buf.writeNBTTagCompoundToBuffer(data);
+        buf.writeCompoundTag(data);
     }
 
     @Override
@@ -36,7 +36,7 @@ public class PacketGui implements IMessage, IMessageHandler<PacketGui, IMessage>
         PacketBuffer buf = new PacketBuffer(buffer);
         try
         {
-            data = buf.readNBTTagCompoundFromBuffer();
+            data = buf.readCompoundTag();
         }
         catch (IOException e)
         {
@@ -52,7 +52,7 @@ public class PacketGui implements IMessage, IMessageHandler<PacketGui, IMessage>
             @Override
             public void run()
             {
-                processMessage(ctx.getServerHandler().playerEntity, message);
+                processMessage(ctx.getServerHandler().player, message);
             }
         });
         return null;
@@ -62,7 +62,7 @@ public class PacketGui implements IMessage, IMessageHandler<PacketGui, IMessage>
     {
         if (message.data.hasNoTags())
         {
-            player.openGui(ThutWearables.instance, 0, player.worldObj, 0, 0, 0);
+            player.openGui(ThutWearables.instance, 0, player.world, 0, 0, 0);
             return;
         }
         byte slot = message.data.getByte("S");

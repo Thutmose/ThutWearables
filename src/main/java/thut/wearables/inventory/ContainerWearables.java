@@ -230,7 +230,7 @@ public class ContainerWearables extends Container
     public void onContainerClosed(EntityPlayer player)
     {
         super.onContainerClosed(player);
-        if(!player.worldObj.isRemote)
+        if(!player.world.isRemote)
         {
             ThutWearables.syncWearables(player);
         }

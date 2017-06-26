@@ -38,7 +38,7 @@ public class PacketSyncWearables implements IMessage, IMessageHandler<PacketSync
     @Override
     public void toBytes(ByteBuf buffer)
     {
-        new PacketBuffer(buffer).writeNBTTagCompoundToBuffer(data);
+        new PacketBuffer(buffer).writeCompoundTag(data);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class PacketSyncWearables implements IMessage, IMessageHandler<PacketSync
     {
         try
         {
-            data = new PacketBuffer(buffer).readNBTTagCompoundFromBuffer();
+            data = new PacketBuffer(buffer).readCompoundTag();
         }
         catch (IOException e)
         {
@@ -72,7 +72,7 @@ public class PacketSyncWearables implements IMessage, IMessageHandler<PacketSync
     @SideOnly(Side.CLIENT)
     void processMessage(PacketSyncWearables message)
     {
-        World world = Minecraft.getMinecraft().theWorld;
+        World world = Minecraft.getMinecraft().world;
         if (world == null) return;
         Entity p = world.getEntityByID(message.data.getInteger("I"));
         if (p != null && p instanceof EntityPlayer)

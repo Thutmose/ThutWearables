@@ -259,7 +259,7 @@ public class PlayerWearables implements IWearableInventory, IInventory
     }
 
     @Override
-    public boolean isUseableByPlayer(EntityPlayer player)
+    public boolean isUsableByPlayer(EntityPlayer player)
     {
         return true;
     }
@@ -302,10 +302,10 @@ public class PlayerWearables implements IWearableInventory, IInventory
     {
     }
 
-    //TODO find out what this is.
-    public boolean func_191420_l()
+    @Override
+    public boolean isEmpty()
     {
+        // TODO Auto-generated method stub
         return false;
     }
-
 }
