@@ -14,6 +14,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
@@ -111,6 +112,24 @@ public class ThutWearables
         config.load();
         overworldRules = config.getBoolean("overworldGamerules", "general", overworldRules,
                 "whether to use overworld gamerules for keep inventory");
+        String[] otherWearables = config.getStringList("customWearables", "general",
+                new String[] { "wearablebackpacks:backpack>BACK" }, "Other mod's items that can be worn.");
+        for (String s : otherWearables)
+        {
+            try
+            {
+                String[] args = s.split(">");
+                ResourceLocation resource = new ResourceLocation(args[0]);
+                EnumWearable slot = EnumWearable.valueOf(args[1]);
+                // TODO make a thing to register itemstack -> slot mapping for a
+                // capabilities handler later.
+            }
+            catch (Exception e1)
+            {
+                e1.printStackTrace();
+            }
+
+        }
         config.save();
         packetPipeline.registerMessage(PacketGui.class, PacketGui.class, 1, Side.SERVER);
         packetPipeline.registerMessage(PacketSyncWearables.class, PacketSyncWearables.class, 2, Side.CLIENT);
