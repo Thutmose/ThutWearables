@@ -56,6 +56,7 @@ public class GuiWearables extends InventoryEffectRenderer
         super.drawScreen(mouseX, mouseY, partialTicks);
         this.oldMouseX = mouseX;
         this.oldMouseY = mouseY;
+        this.renderHoveredToolTip(mouseX, mouseY);
     }
 
     /** Draws either a gradient over the background screen (when it exists) or a
