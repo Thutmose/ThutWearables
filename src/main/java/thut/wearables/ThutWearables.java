@@ -21,6 +21,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.event.entity.player.PlayerDropsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
@@ -42,6 +43,7 @@ import thut.wearables.CompatClass.Phase;
 import thut.wearables.client.gui.GuiEvents;
 import thut.wearables.client.gui.GuiWearables;
 import thut.wearables.client.render.WearableEventHandler;
+import thut.wearables.impl.ConfigWearable;
 import thut.wearables.inventory.ContainerWearables;
 import thut.wearables.inventory.PlayerWearables;
 import thut.wearables.inventory.WearableHandler;
@@ -64,15 +66,17 @@ public class ThutWearables
         WearableHandler.getInstance().save(wearer.getCachedUniqueIdString());
     }
 
-    public static SimpleNetworkWrapper                    packetPipeline = new SimpleNetworkWrapper(MODID);
+    public static SimpleNetworkWrapper                    packetPipeline  = new SimpleNetworkWrapper(MODID);
 
     @SidedProxy
     public static CommonProxy                             proxy;
     @Instance(value = MODID)
     public static ThutWearables                           instance;
 
-    private boolean                                       overworldRules = true;
-    Map<CompatClass.Phase, Set<java.lang.reflect.Method>> initMethods    = Maps.newHashMap();
+    private boolean                                       overworldRules  = true;
+    Map<CompatClass.Phase, Set<java.lang.reflect.Method>> initMethods     = Maps.newHashMap();
+
+    Map<ResourceLocation, EnumWearable>                   configWearables = Maps.newHashMap();
 
     public ThutWearables()
     {
@@ -121,14 +125,12 @@ public class ThutWearables
                 String[] args = s.split(">");
                 ResourceLocation resource = new ResourceLocation(args[0]);
                 EnumWearable slot = EnumWearable.valueOf(args[1]);
-                // TODO make a thing to register itemstack -> slot mapping for a
-                // capabilities handler later.
+                configWearables.put(resource, slot);
             }
             catch (Exception e1)
             {
                 e1.printStackTrace();
             }
-
         }
         config.save();
         packetPipeline.registerMessage(PacketGui.class, PacketGui.class, 1, Side.SERVER);
@@ -246,6 +248,17 @@ public class ThutWearables
                 }
                 syncSchedule.remove(player.getUniqueID());
             }
+        }
+    }
+
+    @SubscribeEvent
+    public void onItemCapabilityAttach(AttachCapabilitiesEvent<ItemStack> event)
+    {
+        ResourceLocation loc = event.getObject().getItem().getRegistryName();
+        EnumWearable slot = configWearables.get(loc);
+        if (slot != null)
+        {
+            event.addCapability(new ResourceLocation(MODID, "configwearable"), new ConfigWearable(slot));
         }
     }
 
