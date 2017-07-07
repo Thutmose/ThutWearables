@@ -53,6 +53,7 @@ public class GuiWearables extends InventoryEffectRenderer
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks)
     {
+        drawDefaultBackground();
         super.drawScreen(mouseX, mouseY, partialTicks);
         this.oldMouseX = mouseX;
         this.oldMouseY = mouseY;
@@ -75,8 +76,8 @@ public class GuiWearables extends InventoryEffectRenderer
         int i = this.guiLeft;
         int j = this.guiTop;
         this.drawTexturedModalRect(i, j, 0, 0, this.xSize, this.ySize);
-        GuiInventory.drawEntityOnScreen(i + 51, j + 75, 30, i + 51 - this.oldMouseX,
-                j + 75 - 50 - this.oldMouseY, this.mc.player);
+        GuiInventory.drawEntityOnScreen(i + 51, j + 75, 30, i + 51 - this.oldMouseX, j + 75 - 50 - this.oldMouseY,
+                this.mc.player);
     }
 
     /** Called when the mouse is clicked. Args : mouseX, mouseY,

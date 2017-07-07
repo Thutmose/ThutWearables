@@ -18,4 +18,9 @@ public interface IWearable
      * @param stack
      *            - The stack being worn */
     void renderWearable(EnumWearable slot, EntityLivingBase wearer, ItemStack stack, float partialTicks);
+
+    default boolean canRemove(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex)
+    {
+        return true;
+    }
 }

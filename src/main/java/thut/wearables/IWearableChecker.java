@@ -14,4 +14,6 @@ public interface IWearableChecker
     public void onUpdate(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex);
 
     public void onInteract(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex);
+
+    public boolean canRemove(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex);
 }

@@ -99,6 +99,18 @@ public enum EnumWearable
                     CompatWrapper.rightClickWith(itemstack, (EntityPlayer) player, EnumHand.MAIN_HAND);
                 }
             }
+
+            @Override
+            public boolean canRemove(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex)
+            {
+                if (itemstack == null) return true;
+                IActiveWearable wearable;
+                if ((wearable = itemstack.getCapability(IActiveWearable.WEARABLE_CAP, null)) != null) { return wearable
+                        .canRemove(player, itemstack, slot, subIndex); }
+                if (itemstack.getItem() instanceof IWearable)
+                    return ((IActiveWearable) itemstack.getItem()).canRemove(player, itemstack, slot, subIndex);
+                return true;
+            }
         });
     }
 
@@ -182,5 +194,17 @@ public enum EnumWearable
         {
             checker.onUpdate(wearer, stack, slot, subIndex);
         }
+    }
+
+    public static boolean canTakeOff(EntityLivingBase wearer, ItemStack stack, int index)
+    {
+        if (stack == null) return true;
+        EnumWearable slot = getWearable(index);
+        int subIndex = getSubIndex(index);
+        for (IWearableChecker checker : checkers)
+        {
+            if (!checker.canRemove(wearer, stack, slot, subIndex)) return false;
+        }
+        return true;
     }
 }
