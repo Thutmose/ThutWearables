@@ -26,6 +26,7 @@ import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.event.entity.player.PlayerDropsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -51,11 +52,12 @@ import thut.wearables.inventory.WearableHandler;
 import thut.wearables.network.PacketGui;
 import thut.wearables.network.PacketSyncWearables;
 
-@Mod(modid = ThutWearables.MODID, name = "Thut Wearables", version = ThutWearables.VERSION)
+@Mod(modid = ThutWearables.MODID, name = "Thut Wearables", version = ThutWearables.VERSION, guiFactory = ThutWearables.CONFIGGUI)
 public class ThutWearables
 {
-    public static final String MODID   = Reference.MODID;
-    public static final String VERSION = Reference.VERSION;
+    public static final String MODID     = Reference.MODID;
+    public static final String VERSION   = Reference.VERSION;
+    public static final String CONFIGGUI = "thut.wearables.client.gui.ModGuiFactory";
 
     public static PlayerWearables getWearables(EntityLivingBase wearer)
     {
@@ -67,20 +69,23 @@ public class ThutWearables
         WearableHandler.getInstance().save(wearer.getCachedUniqueIdString());
     }
 
-    public static SimpleNetworkWrapper                    packetPipeline  = new SimpleNetworkWrapper(MODID);
+    public static SimpleNetworkWrapper                    packetPipeline     = new SimpleNetworkWrapper(MODID);
 
     @SidedProxy
     public static CommonProxy                             proxy;
     @Instance(value = MODID)
     public static ThutWearables                           instance;
 
-    private boolean                                       overworldRules  = true;
-    Map<CompatClass.Phase, Set<java.lang.reflect.Method>> initMethods     = Maps.newHashMap();
+    private boolean                                       overworldRules     = true;
+    Map<CompatClass.Phase, Set<java.lang.reflect.Method>> initMethods        = Maps.newHashMap();
 
-    Map<ResourceLocation, EnumWearable>                   configWearables = Maps.newHashMap();
+    Map<ResourceLocation, EnumWearable>                   configWearables    = Maps.newHashMap();
 
-    public static Map<Integer, float[]>                   renderOffsets   = Maps.newHashMap();
-    public static Set<Integer>                            renderBlacklist = Sets.newHashSet();
+    public static Map<Integer, float[]>                   renderOffsets      = Maps.newHashMap();
+    public static Map<Integer, float[]>                   renderOffsetsSneak = Maps.newHashMap();
+    public static Set<Integer>                            renderBlacklist    = Sets.newHashSet();
+    public static String                                  configPath;
+    public static Configuration                           config;
 
     public ThutWearables()
     {
@@ -112,11 +117,8 @@ public class ThutWearables
         }
     }
 
-    @EventHandler
-    public void preInit(FMLPreInitializationEvent e)
+    private void handleConfig()
     {
-        proxy.preInit(e);
-        Configuration config = new Configuration(e.getSuggestedConfigurationFile());
         config.load();
         overworldRules = config.getBoolean("overworldGamerules", "general", overworldRules,
                 "whether to use overworld gamerules for keep inventory");
@@ -139,6 +141,7 @@ public class ThutWearables
         for (int i = 0; i < EnumWearable.BYINDEX.length; i++)
         {
             float[] offset = new float[3];
+            float[] offsetSneak = new float[3];
             try
             {
                 boolean blacklist = config.getBoolean("noRender_" + i, "client", false,
@@ -151,15 +154,44 @@ public class ThutWearables
                 offset[1] = Float.parseFloat(offsetArr[1]);
                 offset[2] = Float.parseFloat(offsetArr[2]);
                 if (offset[0] == 0 && offset[1] == 0 && offset[2] == 0) offset = null;
+                if (i < 9)
+                {
+                    offsetArr = config.getString("offset_sneaking_" + i, "client", "0,0,0",
+                            "Offset for when sneaking for " + EnumWearable.BYINDEX[i].name()).split(",");
+                    offsetSneak[0] = Float.parseFloat(offsetArr[0]);
+                    offsetSneak[1] = Float.parseFloat(offsetArr[1]);
+                    offsetSneak[2] = Float.parseFloat(offsetArr[2]);
+                }
+                else if (i == 9)
+                {
+                    offsetArr = config.getString("offset_sneaking_" + i, "client", "0,0,0",
+                            "Offset for when sneaking for things on head").split(",");
+                    offsetSneak[0] = Float.parseFloat(offsetArr[0]);
+                    offsetSneak[1] = Float.parseFloat(offsetArr[1]);
+                    offsetSneak[2] = Float.parseFloat(offsetArr[2]);
+                }
+                if (offsetSneak[0] == 0 && offsetSneak[1] == 0 && offsetSneak[2] == 0) offsetSneak = null;
             }
             catch (Exception e1)
             {
                 offset = null;
                 e1.printStackTrace();
             }
-            if (e.getSide() == Side.CLIENT && offset != null) renderOffsets.put(i, offset);
+            if (FMLCommonHandler.instance().getSide() == Side.CLIENT && offset != null) renderOffsets.put(i, offset);
+            if (FMLCommonHandler.instance().getSide() == Side.CLIENT && offsetSneak != null)
+                renderOffsetsSneak.put(i, offsetSneak);
         }
+
         config.save();
+    }
+
+    @EventHandler
+    public void preInit(FMLPreInitializationEvent e)
+    {
+        proxy.preInit(e);
+        config = new Configuration(e.getSuggestedConfigurationFile());
+        configPath = config.getConfigFile().getAbsolutePath();
+        handleConfig();
         packetPipeline.registerMessage(PacketGui.class, PacketGui.class, 1, Side.SERVER);
         packetPipeline.registerMessage(PacketSyncWearables.class, PacketSyncWearables.class, 2, Side.CLIENT);
         MinecraftForge.EVENT_BUS.register(this);
@@ -287,6 +319,15 @@ public class ThutWearables
         if (slot != null)
         {
             event.addCapability(new ResourceLocation(MODID, "configwearable"), new ConfigWearable(slot));
+        }
+    }
+
+    @SubscribeEvent
+    public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent eventArgs)
+    {
+        if (eventArgs.getModID().equals(Reference.MODID))
+        {
+            handleConfig();
         }
     }
 
