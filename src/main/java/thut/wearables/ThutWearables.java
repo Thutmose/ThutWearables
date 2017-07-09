@@ -65,18 +65,19 @@ public class ThutWearables
         WearableHandler.getInstance().save(wearer.getCachedUniqueIdString());
     }
 
-    public static SimpleNetworkWrapper                    packetPipeline  = new SimpleNetworkWrapper(MODID);
+    public static SimpleNetworkWrapper                    packetPipeline     = new SimpleNetworkWrapper(MODID);
 
     @SidedProxy
     public static CommonProxy                             proxy;
     @Instance(value = MODID)
     public static ThutWearables                           instance;
 
-    private boolean                                       overworldRules  = true;
-    Map<CompatClass.Phase, Set<java.lang.reflect.Method>> initMethods     = Maps.newHashMap();
+    private boolean                                       overworldRules     = true;
+    Map<CompatClass.Phase, Set<java.lang.reflect.Method>> initMethods        = Maps.newHashMap();
 
-    public static Map<Integer, float[]>                   renderOffsets   = Maps.newHashMap();
-    public static Set<Integer>                            renderBlacklist = Sets.newHashSet();
+    public static Map<Integer, float[]>                   renderOffsets      = Maps.newHashMap();
+    public static Map<Integer, float[]>                   renderOffsetsSneak = Maps.newHashMap();
+    public static Set<Integer>                            renderBlacklist    = Sets.newHashSet();
 
     public ThutWearables()
     {
@@ -137,6 +138,7 @@ public class ThutWearables
         for (int i = 0; i < EnumWearable.BYINDEX.length; i++)
         {
             float[] offset = new float[3];
+            float[] offsetSneak = new float[3];
             try
             {
                 boolean blacklist = config.getBoolean("noRender_" + i, "client", false,
@@ -149,6 +151,23 @@ public class ThutWearables
                 offset[1] = Float.parseFloat(offsetArr[1]);
                 offset[2] = Float.parseFloat(offsetArr[2]);
                 if (offset[0] == 0 && offset[1] == 0 && offset[2] == 0) offset = null;
+                if (i < 9)
+                {
+                    offsetArr = config.getString("offset_sneaking_" + i, "client", "0,0,0",
+                            "Offset for when sneaking for " + EnumWearable.BYINDEX[i].name()).split(",");
+                    offsetSneak[0] = Float.parseFloat(offsetArr[0]);
+                    offsetSneak[1] = Float.parseFloat(offsetArr[1]);
+                    offsetSneak[2] = Float.parseFloat(offsetArr[2]);
+                }
+                else if (i == 9)
+                {
+                    offsetArr = config.getString("offset_sneaking_" + i, "client", "0,0,0",
+                            "Offset for when sneaking for things on head").split(",");
+                    offsetSneak[0] = Float.parseFloat(offsetArr[0]);
+                    offsetSneak[1] = Float.parseFloat(offsetArr[1]);
+                    offsetSneak[2] = Float.parseFloat(offsetArr[2]);
+                }
+                if (offsetSneak[0] == 0 && offsetSneak[1] == 0 && offsetSneak[2] == 0) offsetSneak = null;
             }
             catch (Exception e1)
             {
@@ -156,7 +175,9 @@ public class ThutWearables
                 e1.printStackTrace();
             }
             if (e.getSide() == Side.CLIENT && offset != null) renderOffsets.put(i, offset);
+            if (e.getSide() == Side.CLIENT && offsetSneak != null) renderOffsetsSneak.put(i, offsetSneak);
         }
+
         config.save();
         packetPipeline.registerMessage(PacketGui.class, PacketGui.class, 1, Side.SERVER);
         packetPipeline.registerMessage(PacketSyncWearables.class, PacketSyncWearables.class, 2, Side.CLIENT);
