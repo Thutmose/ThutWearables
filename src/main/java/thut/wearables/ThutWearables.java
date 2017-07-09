@@ -73,6 +73,8 @@ public class ThutWearables
     private boolean                                       overworldRules = true;
     Map<CompatClass.Phase, Set<java.lang.reflect.Method>> initMethods    = Maps.newHashMap();
 
+    public static Map<Integer, float[]>                   renderOffsets  = Maps.newHashMap();
+
     public ThutWearables()
     {
         for (Phase phase : Phase.values())
@@ -111,6 +113,28 @@ public class ThutWearables
         config.load();
         overworldRules = config.getBoolean("overworldGamerules", "general", overworldRules,
                 "whether to use overworld gamerules for keep inventory");
+
+        for (int i = 0; i < EnumWearable.BYINDEX.length; i++)
+        {
+            float[] offset = new float[3];
+            try
+            {
+                String[] offsetArr = config
+                        .getString("offset_" + i, "client", "0,0,0", "Offset for " + EnumWearable.BYINDEX[i].name())
+                        .split(",");
+                offset[0] = Float.parseFloat(offsetArr[0]);
+                offset[1] = Float.parseFloat(offsetArr[1]);
+                offset[2] = Float.parseFloat(offsetArr[2]);
+                if (offset[0] == 0 && offset[1] == 0 && offset[2] == 0) offset = null;
+            }
+            catch (Exception e1)
+            {
+                offset = null;
+                e1.printStackTrace();
+            }
+            if (e.getSide() == Side.CLIENT && offset != null) renderOffsets.put(i, offset);
+        }
+
         config.save();
         packetPipeline.registerMessage(PacketGui.class, PacketGui.class, 1, Side.SERVER);
         packetPipeline.registerMessage(PacketSyncWearables.class, PacketSyncWearables.class, 2, Side.CLIENT);
