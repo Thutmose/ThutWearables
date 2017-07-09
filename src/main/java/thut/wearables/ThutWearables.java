@@ -24,6 +24,7 @@ import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.event.entity.player.PlayerDropsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -48,11 +49,12 @@ import thut.wearables.inventory.WearableHandler;
 import thut.wearables.network.PacketGui;
 import thut.wearables.network.PacketSyncWearables;
 
-@Mod(modid = ThutWearables.MODID, name = "Thut Wearables", version = ThutWearables.VERSION)
+@Mod(modid = ThutWearables.MODID, name = "Thut Wearables", version = ThutWearables.VERSION, guiFactory = ThutWearables.CONFIGGUI)
 public class ThutWearables
 {
-    public static final String MODID   = Reference.MODID;
-    public static final String VERSION = Reference.VERSION;
+    public static final String MODID     = Reference.MODID;
+    public static final String VERSION   = Reference.VERSION;
+    public static final String CONFIGGUI = "thut.wearables.client.gui.ModGuiFactory";
 
     public static PlayerWearables getWearables(EntityLivingBase wearer)
     {
@@ -77,6 +79,8 @@ public class ThutWearables
     public static Map<Integer, float[]>                   renderOffsets      = Maps.newHashMap();
     public static Map<Integer, float[]>                   renderOffsetsSneak = Maps.newHashMap();
     public static Set<Integer>                            renderBlacklist    = Sets.newHashSet();
+    public static String                                  configPath;
+    public static Configuration                           config;
 
     public ThutWearables()
     {
@@ -108,11 +112,8 @@ public class ThutWearables
         }
     }
 
-    @EventHandler
-    public void preInit(FMLPreInitializationEvent e)
+    private void handleConfig()
     {
-        proxy.preInit(e);
-        Configuration config = new Configuration(e.getSuggestedConfigurationFile());
         config.load();
         overworldRules = config.getBoolean("overworldGamerules", "general", overworldRules,
                 "whether to use overworld gamerules for keep inventory");
@@ -156,11 +157,21 @@ public class ThutWearables
                 offset = null;
                 e1.printStackTrace();
             }
-            if (e.getSide() == Side.CLIENT && offset != null) renderOffsets.put(i, offset);
-            if (e.getSide() == Side.CLIENT && offsetSneak != null) renderOffsetsSneak.put(i, offsetSneak);
+            if (FMLCommonHandler.instance().getSide() == Side.CLIENT && offset != null) renderOffsets.put(i, offset);
+            if (FMLCommonHandler.instance().getSide() == Side.CLIENT && offsetSneak != null)
+                renderOffsetsSneak.put(i, offsetSneak);
         }
 
         config.save();
+    }
+
+    @EventHandler
+    public void preInit(FMLPreInitializationEvent e)
+    {
+        proxy.preInit(e);
+        config = new Configuration(e.getSuggestedConfigurationFile());
+        configPath = config.getConfigFile().getAbsolutePath();
+        handleConfig();
         packetPipeline.registerMessage(PacketGui.class, PacketGui.class, 1, Side.SERVER);
         packetPipeline.registerMessage(PacketSyncWearables.class, PacketSyncWearables.class, 2, Side.CLIENT);
         MinecraftForge.EVENT_BUS.register(this);
@@ -276,6 +287,15 @@ public class ThutWearables
                 }
                 syncSchedule.remove(player.getUniqueID());
             }
+        }
+    }
+
+    @SubscribeEvent
+    public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent eventArgs)
+    {
+        if (eventArgs.getModID().equals(Reference.MODID))
+        {
+            handleConfig();
         }
     }
 
