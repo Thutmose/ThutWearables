@@ -112,9 +112,12 @@ public class ThutWearables
         }
     }
 
-    private void handleConfig()
+    private void handleConfig(boolean load)
     {
         config.load();
+        renderOffsets.clear();
+        renderBlacklist.clear();
+        renderOffsetsSneak.clear();
         overworldRules = config.getBoolean("overworldGamerules", "general", overworldRules,
                 "whether to use overworld gamerules for keep inventory");
 
@@ -171,7 +174,7 @@ public class ThutWearables
         proxy.preInit(e);
         config = new Configuration(e.getSuggestedConfigurationFile());
         configPath = config.getConfigFile().getAbsolutePath();
-        handleConfig();
+        handleConfig(true);
         packetPipeline.registerMessage(PacketGui.class, PacketGui.class, 1, Side.SERVER);
         packetPipeline.registerMessage(PacketSyncWearables.class, PacketSyncWearables.class, 2, Side.CLIENT);
         MinecraftForge.EVENT_BUS.register(this);
@@ -295,7 +298,7 @@ public class ThutWearables
     {
         if (eventArgs.getModID().equals(Reference.MODID))
         {
-            handleConfig();
+            handleConfig(false);
         }
     }
 
