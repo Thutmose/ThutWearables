@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -64,17 +65,18 @@ public class ThutWearables
         WearableHandler.getInstance().save(wearer.getCachedUniqueIdString());
     }
 
-    public static SimpleNetworkWrapper                    packetPipeline = new SimpleNetworkWrapper(MODID);
+    public static SimpleNetworkWrapper                    packetPipeline  = new SimpleNetworkWrapper(MODID);
 
     @SidedProxy
     public static CommonProxy                             proxy;
     @Instance(value = MODID)
     public static ThutWearables                           instance;
 
-    private boolean                                       overworldRules = true;
-    Map<CompatClass.Phase, Set<java.lang.reflect.Method>> initMethods    = Maps.newHashMap();
+    private boolean                                       overworldRules  = true;
+    Map<CompatClass.Phase, Set<java.lang.reflect.Method>> initMethods     = Maps.newHashMap();
 
-    public static Map<Integer, float[]>                   renderOffsets  = Maps.newHashMap();
+    public static Map<Integer, float[]>                   renderOffsets   = Maps.newHashMap();
+    public static Set<Integer>                            renderBlacklist = Sets.newHashSet();
 
     public ThutWearables()
     {
@@ -137,6 +139,9 @@ public class ThutWearables
             float[] offset = new float[3];
             try
             {
+                boolean blacklist = config.getBoolean("noRender_" + i, "client", false,
+                        "Do not render " + EnumWearable.BYINDEX[i].name());
+                if (blacklist) renderBlacklist.add(i);
                 String[] offsetArr = config
                         .getString("offset_" + i, "client", "0,0,0", "Offset for " + EnumWearable.BYINDEX[i].name())
                         .split(",");

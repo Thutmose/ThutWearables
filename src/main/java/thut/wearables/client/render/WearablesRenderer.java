@@ -61,7 +61,7 @@ public class WearablesRenderer implements LayerRenderer<EntityPlayer>
         if (!(this.livingEntityRenderer.getMainModel() instanceof ModelBiped)) return;
         boolean thin = ((AbstractClientPlayer) player).getSkinType().equals("slim");
         GlStateManager.pushMatrix();
-        if (rightRing != null)
+        if (rightRing != null && !ThutWearables.renderBlacklist.contains(0))
         {
             GlStateManager.pushMatrix();
             if (player.isSneaking())
@@ -82,7 +82,7 @@ public class WearablesRenderer implements LayerRenderer<EntityPlayer>
             render(rightRing, player, EnumWearable.FINGER, partialTicks);
             GlStateManager.popMatrix();
         }
-        if (leftRing != null)
+        if (leftRing != null && !ThutWearables.renderBlacklist.contains(1))
         {
             GlStateManager.pushMatrix();
             if (player.isSneaking())
@@ -103,7 +103,7 @@ public class WearablesRenderer implements LayerRenderer<EntityPlayer>
             render(leftRing, player, EnumWearable.FINGER, partialTicks);
             GlStateManager.popMatrix();
         }
-        if (rightBrace != null)
+        if (rightBrace != null && !ThutWearables.renderBlacklist.contains(2))
         {
             GlStateManager.pushMatrix();
             if (player.isSneaking())
@@ -124,7 +124,7 @@ public class WearablesRenderer implements LayerRenderer<EntityPlayer>
             render(rightBrace, player, EnumWearable.WRIST, partialTicks);
             GlStateManager.popMatrix();
         }
-        if (leftBrace != null)
+        if (leftBrace != null && !ThutWearables.renderBlacklist.contains(3))
         {
             GlStateManager.pushMatrix();
             if (player.isSneaking())
@@ -145,7 +145,7 @@ public class WearablesRenderer implements LayerRenderer<EntityPlayer>
             render(leftBrace, player, EnumWearable.WRIST, partialTicks);
             GlStateManager.popMatrix();
         }
-        if (rightLeg != null)
+        if (rightLeg != null && !ThutWearables.renderBlacklist.contains(4))
         {
             GlStateManager.pushMatrix();
             if (player.isSneaking())
@@ -161,7 +161,7 @@ public class WearablesRenderer implements LayerRenderer<EntityPlayer>
             render(rightLeg, player, EnumWearable.ANKLE, partialTicks);
             GlStateManager.popMatrix();
         }
-        if (leftLeg != null)
+        if (leftLeg != null && !ThutWearables.renderBlacklist.contains(5))
         {
             GlStateManager.pushMatrix();
             if (player.isSneaking())
@@ -177,7 +177,7 @@ public class WearablesRenderer implements LayerRenderer<EntityPlayer>
             render(leftLeg, player, EnumWearable.ANKLE, partialTicks);
             GlStateManager.popMatrix();
         }
-        if (neck != null)
+        if (neck != null && !ThutWearables.renderBlacklist.contains(6))
         {
             GL11.glPushMatrix();
             if (player.isSneaking())
@@ -192,7 +192,7 @@ public class WearablesRenderer implements LayerRenderer<EntityPlayer>
             render(neck, player, EnumWearable.NECK, partialTicks);
             GL11.glPopMatrix();
         }
-        if (bag != null)
+        if (bag != null && !ThutWearables.renderBlacklist.contains(7))
         {
             GL11.glPushMatrix();
             if (player.isSneaking())
@@ -207,7 +207,7 @@ public class WearablesRenderer implements LayerRenderer<EntityPlayer>
             render(bag, player, EnumWearable.BACK, partialTicks);
             GL11.glPopMatrix();
         }
-        if (beltStack != null)
+        if (beltStack != null && !ThutWearables.renderBlacklist.contains(8))
         {
             // First pass of render
             GL11.glPushMatrix();
@@ -242,7 +242,7 @@ public class WearablesRenderer implements LayerRenderer<EntityPlayer>
             GlStateManager.translate(0, -0.25, 0);
             GlStateManager.pushMatrix();
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-            if (rightEar != null)
+            if (rightEar != null && !ThutWearables.renderBlacklist.contains(9))
             {
                 GlStateManager.pushMatrix();
                 GL11.glTranslated(-0.25, -0.1, 0.0);
@@ -255,7 +255,7 @@ public class WearablesRenderer implements LayerRenderer<EntityPlayer>
                 render(rightEar, player, EnumWearable.EAR, partialTicks);
                 GlStateManager.popMatrix();
             }
-            if (leftEar != null)
+            if (leftEar != null && !ThutWearables.renderBlacklist.contains(10))
             {
                 GlStateManager.pushMatrix();
                 GL11.glTranslated(0.25, -0.1, 0.0);
@@ -268,7 +268,7 @@ public class WearablesRenderer implements LayerRenderer<EntityPlayer>
                 render(leftEar, player, EnumWearable.EAR, partialTicks);
                 GlStateManager.popMatrix();
             }
-            if (eyes != null)
+            if (eyes != null && !ThutWearables.renderBlacklist.contains(11))
             {
                 GlStateManager.pushMatrix();
                 if ((offsetArr = ThutWearables.renderOffsets.get(11)) != null)
@@ -278,7 +278,7 @@ public class WearablesRenderer implements LayerRenderer<EntityPlayer>
                 render(eyes, player, EnumWearable.EYE, partialTicks);
                 GlStateManager.popMatrix();
             }
-            if (hat != null)
+            if (hat != null && !ThutWearables.renderBlacklist.contains(12))
             {
                 GlStateManager.pushMatrix();
                 if ((offsetArr = ThutWearables.renderOffsets.get(12)) != null)
