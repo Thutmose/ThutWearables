@@ -114,7 +114,7 @@ public class ThutWearables
 
     private void handleConfig(boolean load)
     {
-        config.load();
+        if (load) config.load();
         renderOffsets.clear();
         renderBlacklist.clear();
         renderOffsetsSneak.clear();
