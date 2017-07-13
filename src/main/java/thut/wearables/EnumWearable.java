@@ -107,7 +107,7 @@ public enum EnumWearable
                 IActiveWearable wearable;
                 if ((wearable = itemstack.getCapability(IActiveWearable.WEARABLE_CAP, null)) != null) { return wearable
                         .canRemove(player, itemstack, slot, subIndex); }
-                if (itemstack.getItem() instanceof IWearable)
+                if (itemstack.getItem() instanceof IActiveWearable)
                     return ((IActiveWearable) itemstack.getItem()).canRemove(player, itemstack, slot, subIndex);
                 return true;
             }
