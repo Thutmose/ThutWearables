@@ -87,8 +87,8 @@ public enum EnumWearable
                 if (itemstack.getItem() instanceof IActiveWearable)
                     ((IActiveWearable) itemstack.getItem()).onUpdate(player, itemstack, slot, subIndex);
                 else if (player instanceof EntityPlayer)
-                    itemstack.getItem().onArmorTick(player.world, (EntityPlayer) player, itemstack);
-                else itemstack.getItem().onUpdate(itemstack, player.world, player, slot.index + subIndex, false);
+                    itemstack.getItem().onArmorTick(player.getEntityWorld(), (EntityPlayer) player, itemstack);
+                else itemstack.getItem().onUpdate(itemstack, player.getEntityWorld(), player, slot.index + subIndex, false);
             }
 
             @Override

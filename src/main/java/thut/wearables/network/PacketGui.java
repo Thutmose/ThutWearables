@@ -62,7 +62,7 @@ public class PacketGui implements IMessage, IMessageHandler<PacketGui, IMessage>
     {
         if (message.data.hasNoTags())
         {
-            player.openGui(ThutWearables.instance, 0, player.world, 0, 0, 0);
+            player.openGui(ThutWearables.instance, 0, player.getEntityWorld(), 0, 0, 0);
             return;
         }
         byte slot = message.data.getByte("S");
