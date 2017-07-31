@@ -294,7 +294,7 @@ public class ThutWearables
                 EnumWearable.tick(wearer, wearables.getStackInSlot(i), i);
             }
         }
-        if (event.getEntityLiving().worldObj.isRemote) return;
+        if (event.getEntityLiving().getEntityWorld().isRemote) return;
         if (event.getEntity() instanceof EntityPlayer)
         {
             EntityPlayer player = (EntityPlayer) event.getEntity();
@@ -302,7 +302,7 @@ public class ThutWearables
             if (!syncSchedule.isEmpty() && syncSchedule.contains(player.getUniqueID()) && player.ticksExisted > 20)
             {
                 syncWearables(player);
-                for (EntityPlayer player2 : event.getEntity().worldObj.playerEntities)
+                for (EntityPlayer player2 : event.getEntity().getEntityWorld().playerEntities)
                 {
                     packetPipeline.sendTo(new PacketSyncWearables(player2), (EntityPlayerMP) player);
                 }
