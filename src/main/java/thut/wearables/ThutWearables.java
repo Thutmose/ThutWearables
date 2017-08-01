@@ -86,6 +86,7 @@ public class ThutWearables
     public static Set<Integer>                            renderBlacklist    = Sets.newHashSet();
     public static String                                  configPath;
     public static Configuration                           config;
+    public static boolean                                 baublesCompat      = true;
 
     public ThutWearables()
     {
@@ -93,6 +94,8 @@ public class ThutWearables
         {
             initMethods.put(phase, new HashSet<java.lang.reflect.Method>());
         }
+        CompatParser.findClasses("thut.wearables.compat", initMethods);
+        doPhase(Phase.CONSTRUCT, null);
     }
 
     public void init(FMLInitializationEvent evt)
@@ -125,6 +128,8 @@ public class ThutWearables
         renderOffsetsSneak.clear();
         overworldRules = config.getBoolean("overworldGamerules", "general", overworldRules,
                 "whether to use overworld gamerules for keep inventory");
+        baublesCompat = config.getBoolean("baublesCompat", "compat", baublesCompat,
+                "Should thutwearables attempt to make baubles wearables.");
         String[] otherWearables = config.getStringList("customWearables", "general",
                 new String[] { "wearablebackpacks:backpack>BACK" }, "Other mod's items that can be worn.");
         for (String s : otherWearables)
