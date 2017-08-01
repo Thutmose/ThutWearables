@@ -77,11 +77,14 @@ public class ThutWearables
     private boolean                                       overworldRules     = true;
     Map<CompatClass.Phase, Set<java.lang.reflect.Method>> initMethods        = Maps.newHashMap();
 
+    Map<ResourceLocation, EnumWearable>                   configWearables    = Maps.newHashMap();
+
     public static Map<Integer, float[]>                   renderOffsets      = Maps.newHashMap();
     public static Map<Integer, float[]>                   renderOffsetsSneak = Maps.newHashMap();
     public static Set<Integer>                            renderBlacklist    = Sets.newHashSet();
     public static String                                  configPath;
     public static Configuration                           config;
+    public static boolean                                 baublesCompat      = true;
 
     public ThutWearables()
     {
@@ -89,6 +92,8 @@ public class ThutWearables
         {
             initMethods.put(phase, new HashSet<java.lang.reflect.Method>());
         }
+        CompatParser.findClasses("thut.wearables.compat", initMethods);
+        doPhase(Phase.CONSTRUCT, null);
     }
 
     public void init(FMLInitializationEvent evt)
@@ -121,6 +126,8 @@ public class ThutWearables
         renderOffsetsSneak.clear();
         overworldRules = config.getBoolean("overworldGamerules", "general", overworldRules,
                 "whether to use overworld gamerules for keep inventory");
+        baublesCompat = config.getBoolean("baublesCompat", "compat", baublesCompat,
+                "Should thutwearables attempt to make baubles wearables.");
         String[] otherWearables = config.getStringList("customWearables", "general",
                 new String[] { "wearablebackpacks:backpack>BACK" }, "Other mod's items that can be worn.");
         for (String s : otherWearables)
@@ -130,14 +137,12 @@ public class ThutWearables
                 String[] args = s.split(">");
                 ResourceLocation resource = new ResourceLocation(args[0]);
                 EnumWearable slot = EnumWearable.valueOf(args[1]);
-                // TODO make a thing to register itemstack -> slot mapping for a
-                // capabilities handler later.
+                configWearables.put(resource, slot);
             }
             catch (Exception e1)
             {
                 e1.printStackTrace();
             }
-
         }
         for (int i = 0; i < EnumWearable.BYINDEX.length; i++)
         {
@@ -276,6 +281,7 @@ public class ThutWearables
             if (stack != null)
             {
                 player.dropItem(stack.copy(), true, false);
+                EnumWearable.takeOff(player, stack, i);
                 cap.setInventorySlotContents(i, CompatWrapper.nullStack);
             }
         }
@@ -310,6 +316,17 @@ public class ThutWearables
             }
         }
     }
+
+//    @SubscribeEvent
+//    public void onItemCapabilityAttach(AttachCapabilitiesEvent<ItemStack> event)
+//    {
+//        ResourceLocation loc = event.getObject().getItem().getRegistryName();
+//        EnumWearable slot = configWearables.get(loc);
+//        if (slot != null)
+//        {
+//            event.addCapability(new ResourceLocation(MODID, "configwearable"), new ConfigWearable(slot));
+//        }
+//    }
 
     @SubscribeEvent
     public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent eventArgs)
