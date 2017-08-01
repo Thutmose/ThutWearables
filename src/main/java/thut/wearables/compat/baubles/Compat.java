@@ -3,7 +3,10 @@ package thut.wearables.compat.baubles;
 import baubles.api.BaubleType;
 import baubles.api.IBauble;
 import baubles.api.cap.BaublesCapabilities;
+import baubles.api.render.IRenderBauble;
+import baubles.api.render.IRenderBauble.RenderType;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
@@ -70,7 +73,7 @@ public class Compat
         }
     }
 
-    public static class WearableWrapper implements IBauble, ICapabilityProvider
+    public static class WearableWrapper implements IBauble, IRenderBauble, ICapabilityProvider
     {
         final IWearable       wrapped;
         final IActiveWearable active;
@@ -169,19 +172,31 @@ public class Compat
         public boolean canUnequip(ItemStack itemstack, EntityLivingBase player)
         {
             // TODO maybe find the index?
-    //        if (active != null) return active.canRemove(player, itemstack, active.getSlot(itemstack), 0);
+            // if (active != null) return active.canRemove(player, itemstack, active.getSlot(itemstack), 0);
             return true;
+        }
+
+        @Override
+        public void onPlayerBaubleRender(ItemStack arg0, EntityPlayer arg1, RenderType arg2, float arg3)
+        {
+            wrapped.renderWearable(wrapped.getSlot(arg0), arg1, arg0, arg3);
         }
 
     }
 
     public static class BaubleWrapper implements IActiveWearable, ICapabilityProvider
     {
-        final IBauble wrapped;
+        final IBauble       wrapped;
+        final IRenderBauble render;
 
         public BaubleWrapper(IBauble wrapped)
         {
             this.wrapped = wrapped;
+            if (wrapped instanceof IRenderBauble)
+            {
+                render = (IRenderBauble) wrapped;
+            }
+            else render = null;
         }
 
         @Override
@@ -211,6 +226,35 @@ public class Compat
         @Override
         public void renderWearable(EnumWearable slot, EntityLivingBase wearer, ItemStack stack, float partialTicks)
         {
+            if (render != null && wearer instanceof EntityPlayer)
+            {
+                RenderType type = null;
+                EntityPlayer player = (EntityPlayer) wearer;
+                switch (slot)
+                {
+                case HAT:
+                    type = RenderType.HEAD;
+                    break;
+                case EAR:
+                    type = RenderType.HEAD;
+                    break;
+                case EYE:
+                    type = RenderType.HEAD;
+                    break;
+                case NECK:
+                    type = RenderType.BODY;
+                    break;
+                case BACK:
+                    type = RenderType.BODY;
+                    break;
+                case WAIST:
+                    type = RenderType.BODY;
+                    break;
+                default:
+                    break;
+                }
+                if (type != null) render.onPlayerBaubleRender(stack, player, type, partialTicks);
+            }
         }
 
         @Override
