@@ -169,7 +169,7 @@ public class Compat
         public boolean canUnequip(ItemStack itemstack, EntityLivingBase player)
         {
             // TODO maybe find the index?
-    //        if (active != null) return active.canRemove(player, itemstack, active.getSlot(itemstack), 0);
+            if (active != null) return active.canRemove(player, itemstack, active.getSlot(itemstack), 0);
             return true;
         }
 

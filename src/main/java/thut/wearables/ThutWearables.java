@@ -319,17 +319,6 @@ public class ThutWearables
         }
     }
 
-//    @SubscribeEvent
-//    public void onItemCapabilityAttach(AttachCapabilitiesEvent<ItemStack> event)
-//    {
-//        ResourceLocation loc = event.getObject().getItem().getRegistryName();
-//        EnumWearable slot = configWearables.get(loc);
-//        if (slot != null)
-//        {
-//            event.addCapability(new ResourceLocation(MODID, "configwearable"), new ConfigWearable(slot));
-//        }
-//    }
-
     @SubscribeEvent
     public void onItemCapabilityAttach(AttachCapabilitiesEvent<ItemStack> event)
     {
