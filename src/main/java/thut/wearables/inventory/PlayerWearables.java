@@ -14,10 +14,11 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraftforge.items.IItemHandlerModifiable;
 import thut.wearables.CompatWrapper;
 import thut.wearables.EnumWearable;
 
-public class PlayerWearables implements IWearableInventory, IInventory
+public class PlayerWearables implements IWearableInventory, IInventory, IItemHandlerModifiable
 {
     private static class WearableSlot
     {
@@ -308,4 +309,40 @@ public class PlayerWearables implements IWearableInventory, IInventory
         // TODO Auto-generated method stub
         return false;
     }
+
+    @Override
+    public int getSlots()
+    {
+        return 13;
+    }
+
+    @Override
+    public ItemStack insertItem(int slot, ItemStack stack, boolean simulate)
+    {
+        if (CompatWrapper.isValid(getStackInSlot(slot))) return stack;
+        if (simulate) return CompatWrapper.nullStack;
+        setStackInSlot(slot, stack);
+        return CompatWrapper.nullStack;
+    }
+
+    @Override
+    public ItemStack extractItem(int slot, int amount, boolean simulate)
+    {
+        if (!CompatWrapper.isValid(getStackInSlot(slot))) return CompatWrapper.nullStack;
+        if (simulate) return amount > 0 ? getStackInSlot(slot) : CompatWrapper.nullStack;
+        return removeStackFromSlot(slot);
+    }
+
+    @Override
+    public int getSlotLimit(int slot)
+    {
+        return 1;
+    }
+
+    @Override
+    public void setStackInSlot(int slot, ItemStack stack)
+    {
+        this.setInventorySlotContents(slot, stack);
+    }
+
 }

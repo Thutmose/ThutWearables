@@ -23,4 +23,9 @@ public interface IWearable
     {
         return true;
     }
+
+    default boolean canPutOn(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex)
+    {
+        return true;
+    }
 }

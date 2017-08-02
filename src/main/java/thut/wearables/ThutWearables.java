@@ -284,7 +284,7 @@ public class ThutWearables
             {
                 player.dropItem(stack.copy(), true, false);
                 EnumWearable.takeOff(player, stack, i);
-                cap.setInventorySlotContents(i, CompatWrapper.nullStack);
+                cap.setStackInSlot(i, CompatWrapper.nullStack);
             }
         }
         syncWearables(player);

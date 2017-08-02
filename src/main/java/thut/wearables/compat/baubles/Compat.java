@@ -164,7 +164,7 @@ public class Compat
         /** can this bauble be placed in a bauble slot */
         public boolean canEquip(ItemStack itemstack, EntityLivingBase player)
         {
-            return true;
+            return wrapped.canPutOn(player, itemstack, wrapped.getSlot(itemstack), 0);
         }
 
         @Override
@@ -172,8 +172,7 @@ public class Compat
         public boolean canUnequip(ItemStack itemstack, EntityLivingBase player)
         {
             // TODO maybe find the index?
-            if (active != null) return active.canRemove(player, itemstack, active.getSlot(itemstack), 0);
-            return true;
+            return wrapped.canRemove(player, itemstack, wrapped.getSlot(itemstack), 0);
         }
 
         @Override
