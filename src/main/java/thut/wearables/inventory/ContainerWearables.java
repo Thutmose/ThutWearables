@@ -22,20 +22,22 @@ import thut.wearables.EnumWearable;
 import thut.wearables.ThutWearables;
 
 public class ContainerWearables extends Container
-{    
-    private static final EntityEquipmentSlot[] VALID_EQUIPMENT_SLOTS = new EntityEquipmentSlot[] {EntityEquipmentSlot.HEAD, EntityEquipmentSlot.CHEST, EntityEquipmentSlot.LEGS, EntityEquipmentSlot.FEET};
+{
+    private static final EntityEquipmentSlot[] VALID_EQUIPMENT_SLOTS = new EntityEquipmentSlot[] {
+            EntityEquipmentSlot.HEAD, EntityEquipmentSlot.CHEST, EntityEquipmentSlot.LEGS, EntityEquipmentSlot.FEET };
 
     public static class WornSlot extends Slot
     {
-        final EnumWearable slot;
+        final EnumWearable    slot;
         final PlayerWearables slots;
+
         public WornSlot(PlayerWearables inventoryIn, int index, int xPosition, int yPosition)
         {
             super(inventoryIn, index, xPosition, yPosition);
             this.slot = EnumWearable.getWearable(index);
             this.slots = inventoryIn;
         }
-        
+
         @Override
         @SideOnly(Side.CLIENT)
         public net.minecraft.client.renderer.texture.TextureAtlasSprite getBackgroundSprite()
@@ -44,46 +46,46 @@ public class ContainerWearables extends Container
             switch (slot)
             {
             case ANKLE:
-                tex =  ThutWearables.MODID + ":textures/items/empty_ankle_"
+                tex = ThutWearables.MODID + ":textures/items/empty_ankle_"
                         + (EnumWearable.getSubIndex(getSlotIndex()) == 0 ? "left" : "right");
                 break;
             case BACK:
-                tex =  ThutWearables.MODID + ":textures/items/empty_back";
+                tex = ThutWearables.MODID + ":textures/items/empty_back";
                 break;
             case EAR:
-                tex =  ThutWearables.MODID + ":textures/items/empty_ear_"
-                + (EnumWearable.getSubIndex(getSlotIndex()) == 0 ? "left" : "right");
+                tex = ThutWearables.MODID + ":textures/items/empty_ear_"
+                        + (EnumWearable.getSubIndex(getSlotIndex()) == 0 ? "left" : "right");
                 break;
             case EYE:
-                tex =  ThutWearables.MODID + ":textures/items/empty_eye";
+                tex = ThutWearables.MODID + ":textures/items/empty_eye";
                 break;
             case FINGER:
-                tex =  ThutWearables.MODID + ":textures/items/empty_finger_"
-                + (EnumWearable.getSubIndex(getSlotIndex()) == 0 ? "left" : "right");
+                tex = ThutWearables.MODID + ":textures/items/empty_finger_"
+                        + (EnumWearable.getSubIndex(getSlotIndex()) == 0 ? "left" : "right");
                 break;
             case HAT:
-                tex =  ThutWearables.MODID + ":textures/items/empty_hat";
+                tex = ThutWearables.MODID + ":textures/items/empty_hat";
                 break;
             case NECK:
-                tex =  ThutWearables.MODID + ":textures/items/empty_neck";
+                tex = ThutWearables.MODID + ":textures/items/empty_neck";
                 break;
             case WAIST:
-                tex =  ThutWearables.MODID + ":textures/items/empty_waist";
+                tex = ThutWearables.MODID + ":textures/items/empty_waist";
                 break;
             case WRIST:
-                tex =  ThutWearables.MODID + ":textures/items/empty_wrist_"
-                + (EnumWearable.getSubIndex(getSlotIndex()) == 0 ? "left" : "right");
+                tex = ThutWearables.MODID + ":textures/items/empty_wrist_"
+                        + (EnumWearable.getSubIndex(getSlotIndex()) == 0 ? "left" : "right");
                 break;
             default:
                 break;
             }
-            if(tex!=null)
+            if (tex != null)
             {
-                tex = tex+".png";
+                tex = tex + ".png";
                 this.setBackgroundName(tex);
                 this.setBackgroundLocation(new ResourceLocation(tex));
                 TextureAtlasSprite sprite = getBackgroundMap().getTextureExtry(getSlotTexture());
-                if(sprite == null)
+                if (sprite == null)
                 {
                     getBackgroundMap().registerSprite(getBackgroundLocation());
                     sprite = getBackgroundMap().getTextureExtry(getSlotTexture());
@@ -95,9 +97,8 @@ public class ContainerWearables extends Container
         }
 
         @Override
-        /**
-         * Check if the stack is a valid item for this slot. Always true beside for the armor slots.
-         */
+        /** Check if the stack is a valid item for this slot. Always true beside
+         * for the armor slots. */
         public boolean isItemValid(@Nullable ItemStack stack)
         {
             return slots.isItemValidForSlot(getSlotIndex(), stack);
@@ -121,7 +122,7 @@ public class ContainerWearables extends Container
         int yHeight = 18;
 
         bindVanillaInventory(player.inventory);
-        
+
         // First row of ear - hat - ear
         this.addSlotToContainer(new WornSlot(slots, 9, xOffset, yOffset));
         this.addSlotToContainer(new WornSlot(slots, 12, xOffset + xWidth, yOffset));
@@ -145,7 +146,7 @@ public class ContainerWearables extends Container
         // back slot
         this.addSlotToContainer(new WornSlot(slots, 7, xOffset - xWidth, yOffset + yHeight * 3));
     }
-    
+
     private void bindVanillaInventory(InventoryPlayer playerInventory)
     {
 
@@ -154,27 +155,24 @@ public class ContainerWearables extends Container
             final EntityEquipmentSlot entityequipmentslot = VALID_EQUIPMENT_SLOTS[k];
             this.addSlotToContainer(new Slot(playerInventory, 36 + (3 - k), 8, 8 + k * 18)
             {
-                /**
-                 * Returns the maximum stack size for a given slot (usually the same as getInventoryStackLimit(), but 1
-                 * in the case of armor slots)
-                 */
+                /** Returns the maximum stack size for a given slot (usually the
+                 * same as getInventoryStackLimit(), but 1 in the case of armor
+                 * slots) */
                 @Override
                 public int getSlotStackLimit()
                 {
                     return 1;
                 }
-                /**
-                 * Check if the stack is a valid item for this slot. Always true beside for the armor slots.
-                 */
+
+                /** Check if the stack is a valid item for this slot. Always
+                 * true beside for the armor slots. */
                 @Override
                 public boolean isItemValid(@Nullable ItemStack stack)
                 {
-                    if (!CompatWrapper.isValid(stack))
-                    {
-                        return false;
-                    }
+                    if (!CompatWrapper.isValid(stack)) { return false; }
                     return stack.getItem().isValidArmor(stack, entityequipmentslot, thePlayer);
                 }
+
                 @Override
                 @Nullable
                 @SideOnly(Side.CLIENT)
@@ -200,14 +198,14 @@ public class ContainerWearables extends Container
 
         this.addSlotToContainer(new Slot(playerInventory, 40, 77, 62)
         {
-            /**
-             * Check if the stack is a valid item for this slot. Always true beside for the armor slots.
-             */
+            /** Check if the stack is a valid item for this slot. Always true
+             * beside for the armor slots. */
             @Override
             public boolean isItemValid(@Nullable ItemStack stack)
             {
                 return super.isItemValid(stack);
             }
+
             @Override
             @Nullable
             @SideOnly(Side.CLIENT)
@@ -230,7 +228,7 @@ public class ContainerWearables extends Container
     public void onContainerClosed(EntityPlayer player)
     {
         super.onContainerClosed(player);
-        if(!player.worldObj.isRemote)
+        if (!player.worldObj.isRemote)
         {
             ThutWearables.syncWearables(player);
         }
@@ -264,7 +262,8 @@ public class ContainerWearables extends Container
             int numRows = 3;
             if (index < numRows * 9)
             {
-                if (!this.mergeItemStack(itemstack1, numRows * 9, this.inventorySlots.size(), false)) { return CompatWrapper.nullStack; }
+                if (!this.mergeItemStack(itemstack1, numRows * 9, this.inventorySlots.size(),
+                        false)) { return CompatWrapper.nullStack; }
             }
             else if (!this.mergeItemStack(itemstack1, 0, numRows * 9, false)) { return CompatWrapper.nullStack; }
 
