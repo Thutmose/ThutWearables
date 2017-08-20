@@ -23,10 +23,13 @@ import thut.wearables.network.PacketGui;
 public class WearableEventHandler
 {
     private Set<RenderPlayer> addedBaubles = Sets.newHashSet();
+    KeyBinding                toggleGui;
     KeyBinding[]              keys         = new KeyBinding[13];
 
     public WearableEventHandler()
     {
+        toggleGui = new KeyBinding("Toggle Wearables Gui", Keyboard.KEY_NONE, "Wearables");
+        ClientRegistry.registerKeyBinding(toggleGui);
         for (int i = 0; i < 13; i++)
         {
             EnumWearable slot = EnumWearable.getWearable(i);
@@ -58,6 +61,11 @@ public class WearableEventHandler
                 packet.data.setByte("S", i);
                 ThutWearables.packetPipeline.sendToServer(packet);
             }
+        }
+        if (toggleGui.isPressed())
+        {
+            PacketGui packet = new PacketGui();
+            ThutWearables.packetPipeline.sendToServer(packet);
         }
     }
 
