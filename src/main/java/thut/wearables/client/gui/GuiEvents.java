@@ -40,13 +40,16 @@ public class GuiEvents
     @SubscribeEvent
     public void guiPostInit(GuiScreenEvent.InitGuiEvent.Post event)
     {
+        if (!ThutWearables.hasButton) return;
         if (event.getGui() instanceof GuiInventory || event.getGui() instanceof GuiWearables)
         {
             active = event.getGui() instanceof GuiWearables;
             GuiContainer gui = (GuiContainer) event.getGui();
             GuiWearableButton button;
-            event.getButtonList().add(button = new GuiWearableButton(56, gui.guiLeft, gui.guiTop, 26, 9, 10, 10,
-                    I18n.format(active ? "button.wearables.off" : "button.wearables.on", new Object[0])));
+            event.getButtonList()
+                    .add(button = new GuiWearableButton(56, gui.guiLeft, gui.guiTop, ThutWearables.buttonPos[0],
+                            ThutWearables.buttonPos[1], 10, 10,
+                            I18n.format(active ? "button.wearables.off" : "button.wearables.on", new Object[0])));
             button.packedFGColour = 0xFFFF00FF;
         }
         else if (event.getGui() instanceof GuiContainerCreative)
