@@ -78,6 +78,8 @@ public class ThutWearables
 
     public static Map<Integer, float[]>                   renderOffsets      = Maps.newHashMap();
     public static Map<Integer, float[]>                   renderOffsetsSneak = Maps.newHashMap();
+    public static int[]                                   buttonPos          = { 26, 9 };
+    public static boolean                                 hasButton          = true;
     public static Set<Integer>                            renderBlacklist    = Sets.newHashSet();
     public static String                                  configPath;
     public static Configuration                           config;
@@ -120,6 +122,10 @@ public class ThutWearables
         renderOffsetsSneak.clear();
         overworldRules = config.getBoolean("overworldGamerules", "general", overworldRules,
                 "whether to use overworld gamerules for keep inventory");
+        buttonPos = config.get("general", "buttonPos", buttonPos, "Position of the button on the inventory screen.")
+                .getIntList();
+        hasButton = config.get("general", "hasButton", hasButton, "if false, there will be no button for gui.")
+                .getBoolean(true);
 
         for (int i = 0; i < EnumWearable.BYINDEX.length; i++)
         {
