@@ -108,6 +108,7 @@ public class WearablesRenderer implements LayerRenderer<EntityPlayer>
                 GlStateManager.translate(-0.025, 0, 0);
                 GlStateManager.scale(0.75, 1, 1);
             }
+            GlStateManager.scale(-1, 1, 1);
             render(leftRing, player, EnumWearable.FINGER, partialTicks);
             GlStateManager.popMatrix();
         }
@@ -158,6 +159,7 @@ public class WearablesRenderer implements LayerRenderer<EntityPlayer>
                 GlStateManager.translate(-0.025, 0, 0);
                 GlStateManager.scale(0.75, 1, 1);
             }
+            GlStateManager.scale(-1, 1, 1);
             render(leftBrace, player, EnumWearable.WRIST, partialTicks);
             GlStateManager.popMatrix();
         }
@@ -198,6 +200,7 @@ public class WearablesRenderer implements LayerRenderer<EntityPlayer>
             {
                 GlStateManager.translate(offsetArr[0], offsetArr[1], offsetArr[2]);
             }
+            GlStateManager.scale(-1, 1, 1);
             render(leftLeg, player, EnumWearable.ANKLE, partialTicks);
             GlStateManager.popMatrix();
         }
@@ -305,6 +308,7 @@ public class WearablesRenderer implements LayerRenderer<EntityPlayer>
                 {
                     GlStateManager.translate(offsetArr[0], offsetArr[1], offsetArr[2]);
                 }
+                GlStateManager.scale(-1, 1, 1);
                 render(leftEar, player, EnumWearable.EAR, partialTicks);
                 GlStateManager.popMatrix();
             }
