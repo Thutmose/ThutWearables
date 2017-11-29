@@ -102,6 +102,7 @@ public class Compat
         public BaubleType getBaubleType(ItemStack itemstack)
         {
             EnumWearable slot = wrapped.getSlot(itemstack);
+            if (slot == null) return null;
             switch (slot)
             {
             case BACK:
