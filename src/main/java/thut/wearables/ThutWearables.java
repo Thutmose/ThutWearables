@@ -10,12 +10,14 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
@@ -286,9 +288,16 @@ public class ThutWearables
             ItemStack stack = cap.getStackInSlot(i);
             if (stack != null)
             {
-                player.dropItem(stack.copy(), true, false);
                 EnumWearable.takeOff(player, stack, i);
-                cap.setStackInSlot(i, CompatWrapper.nullStack);
+                double d0 = player.posY - 0.3D + player.getEyeHeight();
+                EntityItem drop = new EntityItem(player.getEntityWorld(), player.posX, d0, player.posZ, stack);
+                float f = player.getRNG().nextFloat() * 0.5F;
+                float f1 = player.getRNG().nextFloat() * ((float) Math.PI * 2F);
+                drop.motionX = (double) (-MathHelper.sin(f1) * f);
+                drop.motionZ = (double) (MathHelper.cos(f1) * f);
+                drop.motionY = 0.20000000298023224D;
+                event.getDrops().add(drop);
+                cap.setInventorySlotContents(i, CompatWrapper.nullStack);
             }
         }
         syncWearables(player);

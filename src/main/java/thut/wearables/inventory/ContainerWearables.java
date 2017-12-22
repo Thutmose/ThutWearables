@@ -121,8 +121,6 @@ public class ContainerWearables extends Container
         int xWidth = 18;
         int yHeight = 18;
 
-        bindVanillaInventory(player.inventory);
-
         // First row of ear - hat - ear
         this.addSlotToContainer(new WornSlot(slots, 9, xOffset, yOffset));
         this.addSlotToContainer(new WornSlot(slots, 12, xOffset + xWidth, yOffset));
@@ -145,6 +143,8 @@ public class ContainerWearables extends Container
 
         // back slot
         this.addSlotToContainer(new WornSlot(slots, 7, xOffset - xWidth, yOffset + yHeight * 3));
+
+        bindVanillaInventory(player.inventory);
     }
 
     private void bindVanillaInventory(InventoryPlayer playerInventory)
