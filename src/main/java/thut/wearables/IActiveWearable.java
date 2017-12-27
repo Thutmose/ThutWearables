@@ -15,4 +15,35 @@ public interface IActiveWearable extends IWearable
     public void onTakeOff(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex);
 
     public void onUpdate(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex);
+
+    public static class Default implements IActiveWearable
+    {
+
+        @Override
+        public EnumWearable getSlot(ItemStack stack)
+        {
+            return null;
+        }
+
+        @Override
+        public void renderWearable(EnumWearable slot, EntityLivingBase wearer, ItemStack stack, float partialTicks)
+        {
+        }
+
+        @Override
+        public void onPutOn(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex)
+        {
+        }
+
+        @Override
+        public void onTakeOff(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex)
+        {
+        }
+
+        @Override
+        public void onUpdate(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex)
+        {
+        }
+
+    }
 }
