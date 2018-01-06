@@ -55,12 +55,12 @@ public class GuiEvents
         else if (event.getGui() instanceof GuiContainerCreative)
         {
             GuiContainerCreative gui = (GuiContainerCreative) event.getGui();
-            if (gui.getSelectedTabIndex() != 11) return;
             active = event.getGui() instanceof GuiWearables;
             GuiWearableButton button;
             event.getButtonList().add(button = new GuiWearableButton(56, gui.guiLeft, gui.guiTop, 37, 9, 10, 10,
                     I18n.format(active ? "button.wearables.off" : "button.wearables.on", new Object[0])));
             button.packedFGColour = 0xFFFF00FF;
+            button.visible = button.enabled = gui.getSelectedTabIndex() == 11;
         }
     }
 

@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.gui.inventory.GuiContainerCreative;
 import net.minecraft.client.renderer.GlStateManager;
 
 public class GuiWearableButton extends GuiButton
@@ -29,6 +30,12 @@ public class GuiWearableButton extends GuiButton
     @Override
     public void drawButton(Minecraft mc, int xx, int yy, float partialTicks)
     {
+        if (mc.currentScreen instanceof GuiContainerCreative)
+        {
+            GuiContainerCreative gui = (GuiContainerCreative) mc.currentScreen;
+            visible = enabled = gui.getSelectedTabIndex() == 11;
+        }
+
         if (this.visible)
         {
             int potionShift = getPotionShift(mc);
@@ -36,8 +43,8 @@ public class GuiWearableButton extends GuiButton
             FontRenderer fontrenderer = mc.fontRenderer;
             mc.getTextureManager().bindTexture(GuiWearables.background);
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-            this.hovered = xx >= this.x + potionShift && yy >= this.y
-                    && xx < this.x + this.width + potionShift && yy < this.y + this.height;
+            this.hovered = xx >= this.x + potionShift && yy >= this.y && xx < this.x + this.width + potionShift
+                    && yy < this.y + this.height;
             int k = this.getHoverState(this.hovered);
             GlStateManager.enableBlend();
             GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
