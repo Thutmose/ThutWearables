@@ -31,6 +31,7 @@ public class ContainerWearables extends Container
         final EntityPlayer    wearer;
         final EnumWearable    slot;
         final PlayerWearables slots;
+        private boolean       init = false;
 
         public WornSlot(EntityPlayer player, PlayerWearables inventoryIn, int index, int xPosition, int yPosition)
         {
@@ -44,57 +45,63 @@ public class ContainerWearables extends Container
         @SideOnly(Side.CLIENT)
         public net.minecraft.client.renderer.texture.TextureAtlasSprite getBackgroundSprite()
         {
-            String tex = null;
-            switch (slot)
+            if (!init)
             {
-            case ANKLE:
-                tex = ThutWearables.MODID + ":textures/items/empty_ankle_"
-                        + (EnumWearable.getSubIndex(getSlotIndex()) == 0 ? "left" : "right");
-                break;
-            case BACK:
-                tex = ThutWearables.MODID + ":textures/items/empty_back";
-                break;
-            case EAR:
-                tex = ThutWearables.MODID + ":textures/items/empty_ear_"
-                        + (EnumWearable.getSubIndex(getSlotIndex()) == 0 ? "left" : "right");
-                break;
-            case EYE:
-                tex = ThutWearables.MODID + ":textures/items/empty_eye";
-                break;
-            case FINGER:
-                tex = ThutWearables.MODID + ":textures/items/empty_finger_"
-                        + (EnumWearable.getSubIndex(getSlotIndex()) == 0 ? "left" : "right");
-                break;
-            case HAT:
-                tex = ThutWearables.MODID + ":textures/items/empty_hat";
-                break;
-            case NECK:
-                tex = ThutWearables.MODID + ":textures/items/empty_neck";
-                break;
-            case WAIST:
-                tex = ThutWearables.MODID + ":textures/items/empty_waist";
-                break;
-            case WRIST:
-                tex = ThutWearables.MODID + ":textures/items/empty_wrist_"
-                        + (EnumWearable.getSubIndex(getSlotIndex()) == 0 ? "left" : "right");
-                break;
-            default:
-                break;
-            }
-            if (tex != null)
-            {
-                tex = tex + ".png";
-                this.setBackgroundName(tex);
-                this.setBackgroundLocation(new ResourceLocation(tex));
-                TextureAtlasSprite sprite = getBackgroundMap().getTextureExtry(getSlotTexture());
-                if (sprite == null)
+                String tex = null;
+                switch (slot)
                 {
-                    getBackgroundMap().registerSprite(getBackgroundLocation());
-                    sprite = getBackgroundMap().getTextureExtry(getSlotTexture());
+                case ANKLE:
+                    tex = ThutWearables.MODID + ":textures/items/empty_ankle_"
+                            + (EnumWearable.getSubIndex(getSlotIndex()) == 0 ? "left" : "right");
+                    break;
+                case BACK:
+                    tex = ThutWearables.MODID + ":textures/items/empty_back";
+                    break;
+                case EAR:
+                    tex = ThutWearables.MODID + ":textures/items/empty_ear_"
+                            + (EnumWearable.getSubIndex(getSlotIndex()) == 0 ? "left" : "right");
+                    break;
+                case EYE:
+                    tex = ThutWearables.MODID + ":textures/items/empty_eye";
+                    break;
+                case FINGER:
+                    tex = ThutWearables.MODID + ":textures/items/empty_finger_"
+                            + (EnumWearable.getSubIndex(getSlotIndex()) == 0 ? "left" : "right");
+                    break;
+                case HAT:
+                    tex = ThutWearables.MODID + ":textures/items/empty_hat";
+                    break;
+                case NECK:
+                    tex = ThutWearables.MODID + ":textures/items/empty_neck";
+                    break;
+                case WAIST:
+                    tex = ThutWearables.MODID + ":textures/items/empty_waist";
+                    break;
+                case WRIST:
+                    tex = ThutWearables.MODID + ":textures/items/empty_wrist_"
+                            + (EnumWearable.getSubIndex(getSlotIndex()) == 0 ? "left" : "right");
+                    break;
+                default:
+                    break;
                 }
+                if (tex != null)
+                {
+                    this.setBackgroundName(tex);
+                    tex = tex + ".png";
+                    this.setBackgroundLocation(new ResourceLocation(tex));
+                    TextureAtlasSprite sprite = getBackgroundMap().getTextureExtry(getSlotTexture());
+                    if (sprite == null)
+                    {
+                        getBackgroundMap().registerSprite(getBackgroundLocation());
+                        sprite = super.getBackgroundSprite();
+                        sprite.setIconHeight(16);
+                        sprite.setIconWidth(16);
+                        sprite.initSprite(16, 16, 0, 0, false);
+                    }
+                }
+                init = true;
             }
             TextureAtlasSprite sprite = super.getBackgroundSprite();
-            sprite.initSprite(16, 16, 0, 0, false);
             return sprite;
         }
 
