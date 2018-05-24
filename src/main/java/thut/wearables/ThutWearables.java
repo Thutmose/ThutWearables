@@ -142,7 +142,17 @@ public class ThutWearables
             {
                 String[] args = s.split(">");
                 ResourceLocation resource = new ResourceLocation(args[0]);
-                EnumWearable slot = EnumWearable.valueOf(args[1]);
+                EnumWearable slot = null;
+                try
+                {
+                    slot = EnumWearable.valueOf(args[1]);
+                }
+                catch (IllegalArgumentException e)
+                {
+                    // Ignore this, we put null in the map fine.
+                    System.out.println(resource
+                            + " has been added as a config wearable which requires an NBT tag to specify which slot it fits in.");
+                }
                 configWearables.put(resource, slot);
             }
             catch (Exception e1)
@@ -311,9 +321,9 @@ public class ThutWearables
     public void onItemCapabilityAttach(AttachCapabilitiesEvent<ItemStack> event)
     {
         ResourceLocation loc = event.getObject().getItem().getRegistryName();
-        EnumWearable slot = configWearables.get(loc);
-        if (slot != null)
+        if (configWearables.containsKey(loc))
         {
+            EnumWearable slot = configWearables.get(loc);
             event.addCapability(new ResourceLocation(MODID, "configwearable"), new ConfigWearable(slot));
         }
     }

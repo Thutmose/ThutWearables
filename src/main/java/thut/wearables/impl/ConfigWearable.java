@@ -1,7 +1,11 @@
 package thut.wearables.impl;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
@@ -10,7 +14,7 @@ import thut.wearables.IActiveWearable;
 
 public class ConfigWearable implements IActiveWearable, ICapabilityProvider
 {
-    final EnumWearable slot;
+    EnumWearable slot;
 
     public ConfigWearable(EnumWearable slot)
     {
@@ -20,6 +24,10 @@ public class ConfigWearable implements IActiveWearable, ICapabilityProvider
     @Override
     public EnumWearable getSlot(ItemStack stack)
     {
+        if (slot == null && stack.hasTagCompound() && stack.getTagCompound().hasKey("wslot"))
+        {
+            slot = EnumWearable.valueOf(stack.getTagCompound().getString("wslot"));
+        }
         return slot;
     }
 
@@ -27,6 +35,61 @@ public class ConfigWearable implements IActiveWearable, ICapabilityProvider
     public void renderWearable(EnumWearable slot, EntityLivingBase wearer, ItemStack stack, float partialTicks)
     {
         // TODO way to register renderers for config wearables
+
+        // This is for items that should just be directly rendered
+        if (stack.hasTagCompound() && stack.getTagCompound().hasKey("wslot"))
+        {
+
+            GlStateManager.pushMatrix();
+
+            GlStateManager.rotate(180, 0, 0, 1);
+
+            if (stack.getTagCompound().hasKey("winfo"))
+            {
+                NBTTagCompound info = stack.getTagCompound().getCompoundTag("winfo");
+                if (info.hasKey("scale"))
+                {
+                    float scale = info.getFloat("scale");
+                    GlStateManager.scale(scale, scale, scale);
+                }
+                if (info.hasKey("shiftx"))
+                {
+                    float shift = info.getFloat("shiftx");
+                    GlStateManager.translate(shift, 0, 0);
+                }
+                if (info.hasKey("shifty"))
+                {
+                    float shift = info.getFloat("shifty");
+                    GlStateManager.translate(0, shift, 0);
+                }
+                if (info.hasKey("shiftz"))
+                {
+                    float shift = info.getFloat("shiftz");
+                    GlStateManager.translate(0, 0, shift);
+                }
+                if (info.hasKey("rotx"))
+                {
+                    float shift = info.getFloat("rotx");
+                    GlStateManager.rotate(shift, 1, 0, 0);
+                }
+                if (info.hasKey("roty"))
+                {
+                    float shift = info.getFloat("roty");
+                    GlStateManager.rotate(shift, 0, 1, 0);
+                }
+                if (info.hasKey("rotz"))
+                {
+                    float shift = info.getFloat("rotz");
+                    GlStateManager.rotate(shift, 0, 0, 1);
+                }
+
+            }
+
+            GlStateManager.translate(-0.25, 0, 0);
+            Minecraft.getMinecraft().getItemRenderer().renderItem(wearer, stack, TransformType.NONE);
+            GlStateManager.popMatrix();
+        }
+
     }
 
     @Override
