@@ -28,12 +28,12 @@ public class ContainerWearables extends Container
 
     public static class WornSlot extends Slot
     {
-        final EntityPlayer    wearer;
-        final EnumWearable    slot;
-        final PlayerWearables slots;
-        private boolean       init = false;
+        final EntityPlayer     wearer;
+        final EnumWearable     slot;
+        final InventoryWrapper slots;
+        private boolean        init = false;
 
-        public WornSlot(EntityPlayer player, PlayerWearables inventoryIn, int index, int xPosition, int yPosition)
+        public WornSlot(EntityPlayer player, InventoryWrapper inventoryIn, int index, int xPosition, int yPosition)
         {
             super(inventoryIn, index, xPosition, yPosition);
             this.slot = EnumWearable.getWearable(index);
@@ -153,29 +153,30 @@ public class ContainerWearables extends Container
         int yOffset = 8;
         int xWidth = 18;
         int yHeight = 18;
+        InventoryWrapper wrapper = new InventoryWrapper(slots);
 
         // First row of ear - hat - ear
-        this.addSlotToContainer(new WornSlot(player, slots, 9, xOffset, yOffset));
-        this.addSlotToContainer(new WornSlot(player, slots, 12, xOffset + xWidth, yOffset));
-        this.addSlotToContainer(new WornSlot(player, slots, 10, xOffset + 2 * xWidth, yOffset));
+        this.addSlotToContainer(new WornSlot(player, wrapper, 9, xOffset, yOffset));
+        this.addSlotToContainer(new WornSlot(player, wrapper, 12, xOffset + xWidth, yOffset));
+        this.addSlotToContainer(new WornSlot(player, wrapper, 10, xOffset + 2 * xWidth, yOffset));
 
         // Second row of arm - eye - arm
-        this.addSlotToContainer(new WornSlot(player, slots, 2, xOffset, yOffset + yHeight));
-        this.addSlotToContainer(new WornSlot(player, slots, 11, xOffset + xWidth, yOffset + yHeight));
-        this.addSlotToContainer(new WornSlot(player, slots, 3, xOffset + 2 * xWidth, yOffset + yHeight));
+        this.addSlotToContainer(new WornSlot(player, wrapper, 2, xOffset, yOffset + yHeight));
+        this.addSlotToContainer(new WornSlot(player, wrapper, 11, xOffset + xWidth, yOffset + yHeight));
+        this.addSlotToContainer(new WornSlot(player, wrapper, 3, xOffset + 2 * xWidth, yOffset + yHeight));
 
         // Third row of finger - neck - finger
-        this.addSlotToContainer(new WornSlot(player, slots, 0, xOffset, yOffset + yHeight * 2));
-        this.addSlotToContainer(new WornSlot(player, slots, 6, xOffset + xWidth, yOffset + yHeight * 2));
-        this.addSlotToContainer(new WornSlot(player, slots, 1, xOffset + 2 * xWidth, yOffset + yHeight * 2));
+        this.addSlotToContainer(new WornSlot(player, wrapper, 0, xOffset, yOffset + yHeight * 2));
+        this.addSlotToContainer(new WornSlot(player, wrapper, 6, xOffset + xWidth, yOffset + yHeight * 2));
+        this.addSlotToContainer(new WornSlot(player, wrapper, 1, xOffset + 2 * xWidth, yOffset + yHeight * 2));
 
         // Fourth row of ankle - waist - ankle
-        this.addSlotToContainer(new WornSlot(player, slots, 4, xOffset, yOffset + yHeight * 3));
-        this.addSlotToContainer(new WornSlot(player, slots, 8, xOffset + xWidth, yOffset + yHeight * 3));
-        this.addSlotToContainer(new WornSlot(player, slots, 5, xOffset + 2 * xWidth, yOffset + yHeight * 3));
+        this.addSlotToContainer(new WornSlot(player, wrapper, 4, xOffset, yOffset + yHeight * 3));
+        this.addSlotToContainer(new WornSlot(player, wrapper, 8, xOffset + xWidth, yOffset + yHeight * 3));
+        this.addSlotToContainer(new WornSlot(player, wrapper, 5, xOffset + 2 * xWidth, yOffset + yHeight * 3));
 
         // back slot
-        this.addSlotToContainer(new WornSlot(player, slots, 7, xOffset - xWidth, yOffset + yHeight * 3));
+        this.addSlotToContainer(new WornSlot(player, wrapper, 7, xOffset - xWidth, yOffset + yHeight * 3));
 
         bindVanillaInventory(player.inventory);
     }

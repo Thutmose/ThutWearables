@@ -19,6 +19,15 @@ public interface IWearable
      *            - The stack being worn */
     void renderWearable(EnumWearable slot, EntityLivingBase wearer, ItemStack stack, float partialTicks);
 
+    @SideOnly(Side.CLIENT)
+    /** Does this wearable handle the render offsets by itself?
+     * 
+     * @return */
+    default boolean customOffsets()
+    {
+        return false;
+    }
+
     default boolean canRemove(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex)
     {
         return true;

@@ -17,6 +17,8 @@ import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import thut.wearables.CompatClass;
 import thut.wearables.CompatClass.Phase;
 import thut.wearables.EnumWearable;
@@ -28,6 +30,37 @@ public class Compat
 {
     private static final ResourceLocation BAUBLEWRAP   = new ResourceLocation(Reference.MODID, "baublewrap");
     private static final ResourceLocation WEARABLEWRAP = new ResourceLocation(Reference.MODID, "wearablewrap");
+
+    public static class RenderProvider
+    {
+        public Renderer getRenderer(IBauble bauble)
+        {
+            return new Renderer(bauble);
+        }
+    }
+
+    public static class Renderer
+    {
+        final IRenderBauble render;
+
+        public Renderer(IBauble bauble)
+        {
+            if (bauble instanceof IRenderBauble) render = (IRenderBauble) bauble;
+            else render = null;
+        }
+
+        public boolean canRender()
+        {
+            return render != null;
+        }
+
+        public void doRender(ItemStack arg0, EntityPlayer arg1, RenderType arg2, float arg3)
+        {
+            render.onPlayerBaubleRender(arg0, arg1, arg2, arg3);
+        }
+    }
+
+    public static RenderProvider provider = new RenderProvider();
 
     @CompatClass(phase = Phase.CONSTRUCT)
     @Optional.Method(modid = "baubles")
@@ -186,17 +219,13 @@ public class Compat
 
     public static class BaubleWrapper implements IActiveWearable, ICapabilityProvider
     {
-        final IBauble       wrapped;
-        final IRenderBauble render;
+        final IBauble  wrapped;
+        final Renderer render;
 
         public BaubleWrapper(IBauble wrapped)
         {
             this.wrapped = wrapped;
-            if (wrapped instanceof IRenderBauble)
-            {
-                render = (IRenderBauble) wrapped;
-            }
-            else render = null;
+            this.render = provider.getRenderer(wrapped);
         }
 
         @Override
@@ -223,10 +252,18 @@ public class Compat
             return null;
         }
 
+        @SideOnly(Side.CLIENT)
+        @Override
+        public boolean customOffsets()
+        {
+            return true;
+        }
+        
+        @SideOnly(Side.CLIENT)
         @Override
         public void renderWearable(EnumWearable slot, EntityLivingBase wearer, ItemStack stack, float partialTicks)
         {
-            if (render != null && wearer instanceof EntityPlayer)
+            if (render.canRender() && wearer instanceof EntityPlayer)
             {
                 RenderType type = null;
                 EntityPlayer player = (EntityPlayer) wearer;
@@ -251,9 +288,11 @@ public class Compat
                     type = RenderType.BODY;
                     break;
                 default:
+                    type = RenderType.BODY;
                     break;
                 }
-                if (type != null) render.onPlayerBaubleRender(stack, player, type, partialTicks);
+                System.out.println(wrapped + " render " + type);
+                if (type != null) render.doRender(stack, player, type, partialTicks);
             }
         }
 
@@ -273,12 +312,14 @@ public class Compat
         @Override
         public void onPutOn(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex)
         {
+            System.out.println(wrapped + " put on");
             wrapped.onEquipped(itemstack, player);
         }
 
         @Override
         public void onTakeOff(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex)
         {
+            System.out.println(wrapped + " taken off");
             wrapped.onUnequipped(itemstack, player);
         }
 

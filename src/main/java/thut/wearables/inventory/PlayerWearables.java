@@ -7,18 +7,14 @@ import java.util.Set;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import thut.wearables.CompatWrapper;
 import thut.wearables.EnumWearable;
 
-public class PlayerWearables implements IWearableInventory, IInventory, IItemHandlerModifiable
+public class PlayerWearables implements IWearableInventory, IItemHandlerModifiable
 {
     private static class WearableSlot
     {
@@ -57,7 +53,7 @@ public class PlayerWearables implements IWearableInventory, IInventory, IItemHan
                     setStack(i, CompatWrapper.nullStack);
                     return stack;
                 }
-            return null;
+            return CompatWrapper.nullStack;
         }
 
         boolean addStack(ItemStack stack)
@@ -201,113 +197,9 @@ public class PlayerWearables implements IWearableInventory, IInventory, IItemHan
     }
 
     @Override
-    public String getName()
-    {
-        return "wearables";
-    }
-
-    @Override
-    public boolean hasCustomName()
-    {
-        return false;
-    }
-
-    @Override
-    public ITextComponent getDisplayName()
-    {
-        return new TextComponentTranslation("pokecube.wearables");
-    }
-
-    @Override
-    public int getSizeInventory()
-    {
-        return 13;
-    }
-
-    @Override
     public ItemStack getStackInSlot(int index)
     {
         return slots.get(EnumWearable.getWearable(index)).getStack(EnumWearable.getSubIndex(index));
-    }
-
-    @Override
-    public ItemStack decrStackSize(int index, int count)
-    {
-        return removeStackFromSlot(index);
-    }
-
-    @Override
-    public ItemStack removeStackFromSlot(int index)
-    {
-        return slots.get(EnumWearable.getWearable(index)).removeStack(EnumWearable.getSubIndex(index));
-    }
-
-    @Override
-    public void setInventorySlotContents(int index, ItemStack stack)
-    {
-        slots.get(EnumWearable.getWearable(index)).setStack(EnumWearable.getSubIndex(index), stack);
-    }
-
-    @Override
-    public int getInventoryStackLimit()
-    {
-        return 1;
-    }
-
-    @Override
-    public void markDirty()
-    {
-    }
-
-    @Override
-    public boolean isUsableByPlayer(EntityPlayer player)
-    {
-        return true;
-    }
-
-    @Override
-    public void openInventory(EntityPlayer player)
-    {
-    }
-
-    @Override
-    public void closeInventory(EntityPlayer player)
-    {
-    }
-
-    @Override
-    public boolean isItemValidForSlot(int index, ItemStack stack)
-    {
-        return EnumWearable.getSlot(stack) == EnumWearable.getWearable(index);
-    }
-
-    @Override
-    public int getField(int id)
-    {
-        return 0;
-    }
-
-    @Override
-    public void setField(int id, int value)
-    {
-    }
-
-    @Override
-    public int getFieldCount()
-    {
-        return 0;
-    }
-
-    @Override
-    public void clear()
-    {
-    }
-
-    @Override
-    public boolean isEmpty()
-    {
-        // TODO Auto-generated method stub
-        return false;
     }
 
     @Override
@@ -330,7 +222,7 @@ public class PlayerWearables implements IWearableInventory, IInventory, IItemHan
     {
         if (!CompatWrapper.isValid(getStackInSlot(slot))) return CompatWrapper.nullStack;
         if (simulate) return amount > 0 ? getStackInSlot(slot) : CompatWrapper.nullStack;
-        return removeStackFromSlot(slot);
+        return slots.get(EnumWearable.getWearable(slot)).removeStack(EnumWearable.getSubIndex(slot));
     }
 
     @Override
@@ -342,7 +234,7 @@ public class PlayerWearables implements IWearableInventory, IInventory, IItemHan
     @Override
     public void setStackInSlot(int slot, ItemStack stack)
     {
-        this.setInventorySlotContents(slot, stack);
+        slots.get(EnumWearable.getWearable(slot)).setStack(EnumWearable.getSubIndex(slot), stack);
     }
 
 }

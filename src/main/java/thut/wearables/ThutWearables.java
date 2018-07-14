@@ -35,6 +35,7 @@ import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -102,9 +103,16 @@ public class ThutWearables
         doPhase(Phase.CONSTRUCT, null);
     }
 
+    @EventHandler
     public void init(FMLInitializationEvent evt)
     {
         doPhase(Phase.INIT, evt);
+    }
+
+    @EventHandler
+    public void init(FMLPostInitializationEvent evt)
+    {
+        doPhase(Phase.POST, evt);
     }
 
     private void doPhase(Phase pre, Object event)
@@ -214,6 +222,7 @@ public class ThutWearables
     @EventHandler
     public void preInit(FMLPreInitializationEvent e)
     {
+        doPhase(Phase.PRE, e);
         proxy.preInit(e);
         config = new Configuration(e.getSuggestedConfigurationFile());
         configPath = config.getConfigFile().getAbsolutePath();
@@ -282,7 +291,7 @@ public class ThutWearables
                 drop.motionZ = (double) (MathHelper.cos(f1) * f);
                 drop.motionY = 0.20000000298023224D;
                 event.getDrops().add(drop);
-                cap.setInventorySlotContents(i, CompatWrapper.nullStack);
+                cap.setStackInSlot(i, CompatWrapper.nullStack);
             }
         }
         syncWearables(player);
