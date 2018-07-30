@@ -37,4 +37,9 @@ public interface IWearable
     {
         return true;
     }
+
+    default boolean dyeable(ItemStack stack)
+    {
+        return false;
+    }
 }

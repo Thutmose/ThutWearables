@@ -107,23 +107,10 @@ public class ConfigWearable implements IActiveWearable, ICapabilityProvider
     }
 
     @Override
-    public void onPutOn(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex)
+    public boolean dyeable(ItemStack stack)
     {
-        // TODO way to register an IActiveWearable for this to slave to.
-    }
-
-    @Override
-    public void onTakeOff(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex)
-    {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void onUpdate(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex)
-    {
-        // TODO Auto-generated method stub
-
+        // TODO see if this should be appled here.
+        return false;
     }
 
 }
