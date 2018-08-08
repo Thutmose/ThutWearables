@@ -55,7 +55,7 @@ public class InventoryWrapper implements IInventory
     @Override
     public void setInventorySlotContents(int index, ItemStack stack)
     {
-        wearable.insertItem(index, stack, false);
+        wearable.setStackInSlot(index, stack);
     }
 
     @Override

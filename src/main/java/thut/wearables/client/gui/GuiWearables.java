@@ -1,8 +1,5 @@
 package thut.wearables.client.gui;
 
-import java.io.IOException;
-
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.InventoryEffectRenderer;
@@ -26,27 +23,12 @@ public class GuiWearables extends InventoryEffectRenderer
         super(new ContainerWearables(player));
     }
 
-    /** Called from the main game loop to update the screen. */
-    @Override
-    public void updateScreen()
-    {
-        super.updateScreen();
-    }
-
     /** Adds the buttons (and other controls) to the screen in question. */
     @Override
     public void initGui()
     {
         this.buttonList.clear();
         super.initGui();
-    }
-
-    /** Draw the foreground layer for the GuiContainer (everything in front of
-     * the items) */
-    @Override
-    protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY)
-    {
-        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
     }
 
     /** Draws the screen and all the components in it. */
@@ -60,14 +42,6 @@ public class GuiWearables extends InventoryEffectRenderer
         this.renderHoveredToolTip(mouseX, mouseY);
     }
 
-    /** Draws either a gradient over the background screen (when it exists) or a
-     * flat gradient over background.png */
-    @Override
-    public void drawDefaultBackground()
-    {
-        super.drawDefaultBackground();
-    }
-
     @Override
     protected void drawGuiContainerBackgroundLayer(float p_146976_1_, int p_146976_2_, int p_146976_3_)
     {
@@ -78,18 +52,5 @@ public class GuiWearables extends InventoryEffectRenderer
         this.drawTexturedModalRect(i, j, 0, 0, this.xSize, this.ySize);
         GuiInventory.drawEntityOnScreen(i + 51, j + 75, 30, i + 51 - this.oldMouseX, j + 75 - 50 - this.oldMouseY,
                 this.mc.player);
-    }
-
-    /** Called when the mouse is clicked. Args : mouseX, mouseY,
-     * clickedButton */
-    @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException
-    {
-        super.mouseClicked(mouseX, mouseY, mouseButton);
-    }
-
-    @Override
-    protected void actionPerformed(GuiButton button)
-    {
     }
 }

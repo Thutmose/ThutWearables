@@ -3,9 +3,9 @@ package thut.wearables.inventory;
 import javax.annotation.Nullable;
 
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.inventory.IInventory;
@@ -184,6 +184,7 @@ public class ContainerWearables extends Container
     private void bindVanillaInventory(InventoryPlayer playerInventory)
     {
 
+        // Player armour slots.
         for (int k = 0; k < 4; ++k)
         {
             final EntityEquipmentSlot entityequipmentslot = VALID_EQUIPMENT_SLOTS[k];
@@ -192,22 +193,27 @@ public class ContainerWearables extends Container
                 /** Returns the maximum stack size for a given slot (usually the
                  * same as getInventoryStackLimit(), but 1 in the case of armor
                  * slots) */
-                @Override
                 public int getSlotStackLimit()
                 {
                     return 1;
                 }
 
-                /** Check if the stack is a valid item for this slot. Always
-                 * true beside for the armor slots. */
-                @Override
-                public boolean isItemValid(@Nullable ItemStack stack)
+                /** Check if the stack is allowed to be placed in this slot,
+                 * used for armor slots as well as furnace fuel. */
+                public boolean isItemValid(ItemStack stack)
                 {
-                    if (!CompatWrapper.isValid(stack)) { return false; }
-                    return stack.getItem().isValidArmor(stack, entityequipmentslot, thePlayer);
+                    return stack.getItem().isValidArmor(stack, entityequipmentslot, playerInventory.player);
                 }
 
-                @Override
+                /** Return whether this slot's stack can be taken from this
+                 * slot. */
+                public boolean canTakeStack(EntityPlayer playerIn)
+                {
+                    ItemStack itemstack = this.getStack();
+                    return !itemstack.isEmpty() && !playerIn.isCreative()
+                            && EnchantmentHelper.hasBindingCurse(itemstack) ? false : super.canTakeStack(playerIn);
+                }
+
                 @Nullable
                 @SideOnly(Side.CLIENT)
                 public String getSlotTexture()
@@ -217,6 +223,7 @@ public class ContainerWearables extends Container
             });
         }
 
+        // Main player inventory
         for (int l = 0; l < 3; ++l)
         {
             for (int j1 = 0; j1 < 9; ++j1)
@@ -225,21 +232,15 @@ public class ContainerWearables extends Container
             }
         }
 
+        // Player hotbar
         for (int i1 = 0; i1 < 9; ++i1)
         {
             this.addSlotToContainer(new Slot(playerInventory, i1, 8 + i1 * 18, 142));
         }
 
+        // Offhand slot
         this.addSlotToContainer(new Slot(playerInventory, 40, 77, 62)
         {
-            /** Check if the stack is a valid item for this slot. Always true
-             * beside for the armor slots. */
-            @Override
-            public boolean isItemValid(@Nullable ItemStack stack)
-            {
-                return super.isItemValid(stack);
-            }
-
             @Override
             @Nullable
             @SideOnly(Side.CLIENT)
@@ -248,13 +249,6 @@ public class ContainerWearables extends Container
                 return "minecraft:items/empty_armor_slot_shield";
             }
         });
-    }
-
-    /** Callback for when the crafting matrix is changed. */
-    @Override
-    public void onCraftMatrixChanged(IInventory par1IInventory)
-    {
-        super.onCraftMatrixChanged(par1IInventory);
     }
 
     /** Called when the container is closed. */
@@ -266,18 +260,6 @@ public class ContainerWearables extends Container
         {
             ThutWearables.syncWearables(player);
         }
-    }
-
-    @Override
-    public boolean canInteractWith(EntityPlayer par1EntityPlayer)
-    {
-        return true;
-    }
-
-    @Override
-    public ItemStack slotClick(int slotId, int dragType, ClickType clickTypeIn, EntityPlayer player)
-    {
-        return super.slotClick(slotId, dragType, clickTypeIn, player);
     }
 
     /** Called when a player shift-clicks on a slot. You must override this or
@@ -314,14 +296,9 @@ public class ContainerWearables extends Container
     }
 
     @Override
-    public boolean canMergeSlot(ItemStack par1ItemStack, Slot par2Slot)
+    public boolean canInteractWith(EntityPlayer playerIn)
     {
-        return super.canMergeSlot(par1ItemStack, par2Slot);
-    }
-
-    public ItemStack getStackInSlot(int index)
-    {
-        return slots.getStackInSlot(index);
+        return true;
     }
 
 }
