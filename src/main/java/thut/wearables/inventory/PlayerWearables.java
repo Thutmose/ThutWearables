@@ -12,12 +12,13 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import thut.wearables.CompatWrapper;
 import thut.wearables.EnumWearable;
 
-public class PlayerWearables implements IWearableInventory, IItemHandlerModifiable, ICapabilityProvider
+public class PlayerWearables
+        implements IWearableInventory, IItemHandlerModifiable, ICapabilitySerializable<NBTTagCompound>
 {
     private static class WearableSlot
     {
@@ -252,6 +253,18 @@ public class PlayerWearables implements IWearableInventory, IItemHandlerModifiab
     {
         if (hasCapability(capability, facing)) return WearableHandler.WEARABLES_CAP.cast(this);
         return null;
+    }
+
+    @Override
+    public NBTTagCompound serializeNBT()
+    {
+        return writeToNBT(new NBTTagCompound());
+    }
+
+    @Override
+    public void deserializeNBT(NBTTagCompound nbt)
+    {
+        readFromNBT(nbt );
     }
 
 }

@@ -16,7 +16,7 @@ import net.minecraftforge.fml.relauncher.Side;
 public class WearableHandler
 {
     @CapabilityInject(IWearableInventory.class)
-    public static final Capability<IWearableInventory> WEARABLES_CAP  = null;
+    public static final Capability<IWearableInventory> WEARABLES_CAP = null;
 
     public static PlayerWearables getPlayerData(String uuid)
     {
