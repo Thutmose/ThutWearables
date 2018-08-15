@@ -10,11 +10,14 @@ import com.google.common.collect.Sets;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import thut.wearables.CompatWrapper;
 import thut.wearables.EnumWearable;
 
-public class PlayerWearables implements IWearableInventory, IItemHandlerModifiable
+public class PlayerWearables implements IWearableInventory, IItemHandlerModifiable, ICapabilityProvider
 {
     private static class WearableSlot
     {
@@ -36,7 +39,7 @@ public class PlayerWearables implements IWearableInventory, IItemHandlerModifiab
         {
             for (int i = 0; i < slots.size(); i++)
                 if (CompatWrapper.isValid(slots.get(i))) return slots.get(i);
-            return CompatWrapper.nullStack;
+            return ItemStack.EMPTY;
         }
 
         void setStack(int slot, ItemStack stack)
@@ -50,10 +53,10 @@ public class PlayerWearables implements IWearableInventory, IItemHandlerModifiab
                 if (CompatWrapper.isValid(slots.get(i)))
                 {
                     ItemStack stack = getStack(i);
-                    setStack(i, CompatWrapper.nullStack);
+                    setStack(i, ItemStack.EMPTY);
                     return stack;
                 }
-            return CompatWrapper.nullStack;
+            return ItemStack.EMPTY;
         }
 
         boolean addStack(ItemStack stack)
@@ -92,7 +95,7 @@ public class PlayerWearables implements IWearableInventory, IItemHandlerModifiab
                 if (temp instanceof NBTTagCompound)
                 {
                     NBTTagCompound tag1 = (NBTTagCompound) temp;
-                    setStack(n, CompatWrapper.fromTag(tag1));
+                    setStack(n, new ItemStack(tag1));
                 }
             }
         }
@@ -102,10 +105,10 @@ public class PlayerWearables implements IWearableInventory, IItemHandlerModifiab
             if (CompatWrapper.isValid(slots.get(subIndex)))
             {
                 ItemStack stack = slots.get(subIndex);
-                setStack(subIndex, CompatWrapper.nullStack);
+                setStack(subIndex, ItemStack.EMPTY);
                 return stack;
             }
-            return CompatWrapper.nullStack;
+            return ItemStack.EMPTY;
         }
     }
 
@@ -176,13 +179,14 @@ public class PlayerWearables implements IWearableInventory, IItemHandlerModifiab
         return "wearables";
     }
 
-    public void writeToNBT(NBTTagCompound tag)
+    public NBTTagCompound writeToNBT(NBTTagCompound tag)
     {
         for (EnumWearable slot : slots.keySet())
         {
             NBTTagCompound compound = slots.get(slot).saveToNBT();
             tag.setTag(slot.ordinal() + "", compound);
         }
+        return tag;
     }
 
     public void readFromNBT(NBTTagCompound tag)
@@ -212,16 +216,16 @@ public class PlayerWearables implements IWearableInventory, IItemHandlerModifiab
     public ItemStack insertItem(int slot, ItemStack stack, boolean simulate)
     {
         if (CompatWrapper.isValid(getStackInSlot(slot))) return stack;
-        if (simulate) return CompatWrapper.nullStack;
+        if (simulate) return ItemStack.EMPTY;
         setStackInSlot(slot, stack);
-        return CompatWrapper.nullStack;
+        return ItemStack.EMPTY;
     }
 
     @Override
     public ItemStack extractItem(int slot, int amount, boolean simulate)
     {
-        if (!CompatWrapper.isValid(getStackInSlot(slot))) return CompatWrapper.nullStack;
-        if (simulate) return amount > 0 ? getStackInSlot(slot) : CompatWrapper.nullStack;
+        if (!CompatWrapper.isValid(getStackInSlot(slot))) return ItemStack.EMPTY;
+        if (simulate) return amount > 0 ? getStackInSlot(slot) : ItemStack.EMPTY;
         return slots.get(EnumWearable.getWearable(slot)).removeStack(EnumWearable.getSubIndex(slot));
     }
 
@@ -235,6 +239,19 @@ public class PlayerWearables implements IWearableInventory, IItemHandlerModifiab
     public void setStackInSlot(int slot, ItemStack stack)
     {
         slots.get(EnumWearable.getWearable(slot)).setStack(EnumWearable.getSubIndex(slot), stack);
+    }
+
+    @Override
+    public boolean hasCapability(Capability<?> capability, EnumFacing facing)
+    {
+        return capability == WearableHandler.WEARABLES_CAP;
+    }
+
+    @Override
+    public <T> T getCapability(Capability<T> capability, EnumFacing facing)
+    {
+        if (hasCapability(capability, facing)) return WearableHandler.WEARABLES_CAP.cast(this);
+        return null;
     }
 
 }

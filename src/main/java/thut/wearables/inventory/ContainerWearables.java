@@ -267,7 +267,7 @@ public class ContainerWearables extends Container
     @Override
     public ItemStack transferStackInSlot(EntityPlayer par1EntityPlayer, int index)
     {
-        ItemStack itemstack = CompatWrapper.nullStack;
+        ItemStack itemstack = ItemStack.EMPTY;
         Slot slot = this.inventorySlots.get(index);
 
         if (slot != null && slot.getHasStack())
@@ -279,13 +279,13 @@ public class ContainerWearables extends Container
             if (index < numRows * 9)
             {
                 if (!this.mergeItemStack(itemstack1, numRows * 9, this.inventorySlots.size(),
-                        false)) { return CompatWrapper.nullStack; }
+                        false)) { return ItemStack.EMPTY; }
             }
-            else if (!this.mergeItemStack(itemstack1, 0, numRows * 9, false)) { return CompatWrapper.nullStack; }
+            else if (!this.mergeItemStack(itemstack1, 0, numRows * 9, false)) { return ItemStack.EMPTY; }
 
             if (!CompatWrapper.isValid(itemstack1))
             {
-                slot.putStack(CompatWrapper.nullStack);
+                slot.putStack(ItemStack.EMPTY);
             }
             else
             {

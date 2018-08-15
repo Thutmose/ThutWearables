@@ -15,8 +15,8 @@ import net.minecraftforge.oredict.OreDictionary;
 
 public class RecipeDye implements IRecipe
 {
-    private ItemStack toRemove = CompatWrapper.nullStack;
-    private ItemStack output   = CompatWrapper.nullStack;
+    private ItemStack toRemove = ItemStack.EMPTY;
+    private ItemStack output   = ItemStack.EMPTY;
 
     ResourceLocation  registryName;
 
@@ -42,12 +42,12 @@ public class RecipeDye implements IRecipe
     @Override
     public boolean matches(InventoryCrafting inv, World worldIn)
     {
-        output = CompatWrapper.nullStack;
-        toRemove = CompatWrapper.nullStack;
+        output = ItemStack.EMPTY;
+        toRemove = ItemStack.EMPTY;
         boolean wearable = false;
         boolean dye = false;
-        ItemStack dyeStack = CompatWrapper.nullStack;
-        ItemStack worn = CompatWrapper.nullStack;
+        ItemStack dyeStack = ItemStack.EMPTY;
+        ItemStack worn = ItemStack.EMPTY;
         int n = 0;
         for (int i = 0; i < inv.getSizeInventory(); i++)
         {
@@ -114,7 +114,7 @@ public class RecipeDye implements IRecipe
         }
         else
         {
-            output = CompatWrapper.nullStack;
+            output = ItemStack.EMPTY;
         }
         return CompatWrapper.isValid(output);
     }
@@ -137,7 +137,7 @@ public class RecipeDye implements IRecipe
         if (!CompatWrapper.isValid(stack) && CompatWrapper.isValid(toRemove))
         {
             stack = toRemove;
-            toRemove = CompatWrapper.nullStack;
+            toRemove = ItemStack.EMPTY;
         }
         return stack;
     }

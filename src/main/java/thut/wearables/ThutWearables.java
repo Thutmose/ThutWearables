@@ -9,6 +9,7 @@ import java.util.UUID;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
@@ -16,6 +17,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
@@ -53,6 +55,7 @@ import thut.wearables.client.gui.GuiWearables;
 import thut.wearables.client.render.WearableEventHandler;
 import thut.wearables.impl.ConfigWearable;
 import thut.wearables.inventory.ContainerWearables;
+import thut.wearables.inventory.IWearableInventory;
 import thut.wearables.inventory.PlayerWearables;
 import thut.wearables.inventory.WearableHandler;
 import thut.wearables.network.PacketGui;
@@ -67,12 +70,18 @@ public class ThutWearables
 
     public static PlayerWearables getWearables(EntityLivingBase wearer)
     {
-        return WearableHandler.getInstance().getPlayerData(wearer.getCachedUniqueIdString());
-    }
-
-    public static void saveWearables(EntityLivingBase wearer)
-    {
-        WearableHandler.getInstance().save(wearer.getCachedUniqueIdString());
+        PlayerWearables wearables = WearableHandler.getPlayerData(wearer.getCachedUniqueIdString());
+        if (wearer.hasCapability(WearableHandler.WEARABLES_CAP, null))
+        {
+            IWearableInventory inven = wearer.getCapability(WearableHandler.WEARABLES_CAP, null);
+            if (inven instanceof PlayerWearables)
+            {
+                PlayerWearables ret = (PlayerWearables) inven;
+                if (wearables != null) ret.readFromNBT(wearables.writeToNBT(new NBTTagCompound()));
+                return ret;
+            }
+        }
+        return wearables;
     }
 
     public static SimpleNetworkWrapper                    packetPipeline     = new SimpleNetworkWrapper(MODID);
@@ -248,6 +257,25 @@ public class ThutWearables
             {
             }
         }, IActiveWearable.Default::new);
+        CapabilityManager.INSTANCE.register(IWearableInventory.class, new Capability.IStorage<IWearableInventory>()
+        {
+            @Override
+            public NBTBase writeNBT(Capability<IWearableInventory> capability, IWearableInventory instance,
+                    EnumFacing side)
+            {
+                if (instance instanceof PlayerWearables)
+                    return ((PlayerWearables) instance).writeToNBT(new NBTTagCompound());
+                return null;
+            }
+
+            @Override
+            public void readNBT(Capability<IWearableInventory> capability, IWearableInventory instance, EnumFacing side,
+                    NBTBase nbt)
+            {
+                if (instance instanceof PlayerWearables && nbt instanceof NBTTagCompound)
+                    ((PlayerWearables) instance).readFromNBT((NBTTagCompound) nbt);
+            }
+        }, PlayerWearables::new);
     }
 
     static HashSet<UUID> syncSchedule = new HashSet<UUID>();
@@ -294,7 +322,7 @@ public class ThutWearables
                 drop.motionZ = (double) (MathHelper.cos(f1) * f);
                 drop.motionY = 0.20000000298023224D;
                 event.getDrops().add(drop);
-                cap.setStackInSlot(i, CompatWrapper.nullStack);
+                cap.setStackInSlot(i, ItemStack.EMPTY);
             }
         }
         syncWearables(player);
@@ -326,6 +354,15 @@ public class ThutWearables
                 }
                 syncSchedule.remove(player.getUniqueID());
             }
+        }
+    }
+
+    @SubscribeEvent
+    public void onEntityCapabilityAttach(AttachCapabilitiesEvent<Entity> event)
+    {
+        if (event.getObject() instanceof EntityLivingBase)
+        {
+            event.addCapability(new ResourceLocation(MODID, "wearables"), new PlayerWearables());
         }
     }
 
@@ -364,7 +401,6 @@ public class ThutWearables
             return;
         }
         packetPipeline.sendToAll(new PacketSyncWearables(player));
-        saveWearables(player);
     }
 
     public static class CommonProxy implements IGuiHandler
