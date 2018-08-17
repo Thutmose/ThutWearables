@@ -55,7 +55,6 @@ public class RecipeDye implements IRecipe
             if (CompatWrapper.isValid(stack))
             {
                 n++;
-                // TODO move dye code over to wearables itself.
                 IWearable wear = stack.getCapability(IActiveWearable.WEARABLE_CAP, null);
                 if (wear == null && stack.getItem() instanceof IWearable) wear = (IWearable) stack.getItem();
                 if (wear != null && wear.dyeable(stack))
