@@ -124,11 +124,10 @@ public class Compat
             return capability == BaublesCapabilities.CAPABILITY_ITEM_BAUBLE;
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public <T> T getCapability(Capability<T> capability, EnumFacing facing)
         {
-            return hasCapability(capability, facing) ? (T) this : null;
+            return hasCapability(capability, facing) ? BaublesCapabilities.CAPABILITY_ITEM_BAUBLE.cast(this) : null;
         }
 
         @Override
@@ -258,7 +257,7 @@ public class Compat
         {
             return true;
         }
-        
+
         @SideOnly(Side.CLIENT)
         @Override
         public void renderWearable(EnumWearable slot, EntityLivingBase wearer, ItemStack stack, float partialTicks)
@@ -302,11 +301,10 @@ public class Compat
             return capability == IActiveWearable.WEARABLE_CAP;
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public <T> T getCapability(Capability<T> capability, EnumFacing facing)
         {
-            return hasCapability(capability, facing) ? (T) this : null;
+            return hasCapability(capability, facing) ? IActiveWearable.WEARABLE_CAP.cast(this) : null;
         }
 
         @Override

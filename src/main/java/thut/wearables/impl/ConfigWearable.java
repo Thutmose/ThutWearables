@@ -101,8 +101,7 @@ public class ConfigWearable implements IActiveWearable, ICapabilityProvider
     @Override
     public <T> T getCapability(Capability<T> capability, EnumFacing facing)
     {
-        if (WEARABLE_CAP != null && capability == WEARABLE_CAP) return WEARABLE_CAP.cast(this);
-        return null;
+        return hasCapability(capability, facing) ? IActiveWearable.WEARABLE_CAP.cast(this) : null;
     }
 
     @Override
