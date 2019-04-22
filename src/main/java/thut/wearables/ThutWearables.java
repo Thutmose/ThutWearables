@@ -45,6 +45,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -86,29 +87,30 @@ public class ThutWearables
         return wearables;
     }
 
-    public static SimpleNetworkWrapper                    packetPipeline              = new SimpleNetworkWrapper(MODID);
+    public static SimpleNetworkWrapper                    packetPipeline         = new SimpleNetworkWrapper(MODID);
 
     @SidedProxy
     public static CommonProxy                             proxy;
     @Instance(value = MODID)
     public static ThutWearables                           instance;
 
-    private boolean                                       overworldRules              = true;
-    Map<CompatClass.Phase, Set<java.lang.reflect.Method>> initMethods                 = Maps.newHashMap();
+    private boolean                                       overworldRules         = true;
+    Map<CompatClass.Phase, Set<java.lang.reflect.Method>> initMethods            = Maps.newHashMap();
 
-    Map<ResourceLocation, EnumWearable>                   configWearables             = Maps.newHashMap();
+    Map<ResourceLocation, EnumWearable>                   configWearables        = Maps.newHashMap();
 
-    public static Map<Integer, float[]>                   renderOffsets               = Maps.newHashMap();
-    public static Map<Integer, float[]>                   renderOffsetsSneak          = Maps.newHashMap();
-    public static int[]                                   buttonPos                   = { 26, 9 };
-    public static boolean                                 hasButton                   = true;
-    public static Set<Integer>                            renderBlacklist             = Sets.newHashSet();
+    public static Map<Integer, float[]>                   renderOffsets          = Maps.newHashMap();
+    public static Map<Integer, float[]>                   renderOffsetsSneak     = Maps.newHashMap();
+    public static int[]                                   buttonPos              = { 26, 9 };
+    public static boolean                                 hasButton              = true;
+    public static Set<Integer>                            renderBlacklist        = Sets.newHashSet();
     public static String                                  configPath;
     public static Configuration                           config;
-    public static boolean                                 baublesCompat               = true;
+    public static boolean                                 baublesCompat          = true;
 
     /** Cache of wearables for players that die when keep inventory is on. */
-    Map<UUID, NBTTagCompound>                             player_keep_inventory_cache = Maps.newHashMap();
+    Map<UUID, PlayerWearables>                            player_inventory_cache = Maps.newHashMap();
+    Set<UUID>                                             toKeep                 = Sets.newHashSet();
 
     public ThutWearables()
     {
@@ -296,6 +298,13 @@ public class ThutWearables
     }
 
     @SubscribeEvent
+    public void PlayerLoggedOutEvent(PlayerLoggedOutEvent event)
+    {
+        syncSchedule.remove(event.player.getUniqueID());
+        player_inventory_cache.remove(event.player.getUniqueID());
+    }
+
+    @SubscribeEvent
     public void startTracking(StartTracking event)
     {
         if (event.getTarget() instanceof EntityPlayer && event.getEntityPlayer().isServerWorld())
@@ -315,7 +324,8 @@ public class ThutWearables
         if (rules.getBoolean("keepInventory"))
         {
             PlayerWearables cap = ThutWearables.getWearables(player);
-            player_keep_inventory_cache.put(player.getUniqueID(), cap.serializeNBT());
+            player_inventory_cache.put(player.getUniqueID(), cap);
+            toKeep.add(player.getUniqueID());
             return;
         }
     }
@@ -353,12 +363,13 @@ public class ThutWearables
     public void respawn(PlayerRespawnEvent event)
     {
         EntityPlayer wearer = (EntityPlayer) event.player;
-        if (wearer instanceof EntityPlayerMP && player_keep_inventory_cache.containsKey(wearer.getUniqueID()))
+        if (wearer instanceof EntityPlayerMP && (toKeep.contains(wearer.getUniqueID()) || event.isEndConquered()))
         {
-            NBTTagCompound tag = player_keep_inventory_cache.get(wearer.getUniqueID());
+            NBTTagCompound tag = player_inventory_cache.get(wearer.getUniqueID()).serializeNBT();
             PlayerWearables wearables = getWearables(wearer);
             wearables.deserializeNBT(tag);
-            player_keep_inventory_cache.remove(wearer.getUniqueID());
+            toKeep.remove(wearer.getUniqueID());
+            syncWearables(wearer);
         }
     }
 
@@ -373,12 +384,12 @@ public class ThutWearables
             {
                 EnumWearable.tick(wearer, wearables.getStackInSlot(i), i);
             }
+            if (wearer instanceof EntityPlayerMP) player_inventory_cache.put(wearer.getUniqueID(), wearables);
         }
         if (event.getEntityLiving().getEntityWorld().isRemote) return;
         if (event.getEntity() instanceof EntityPlayer)
         {
             EntityPlayer player = (EntityPlayer) event.getEntity();
-
             if (!syncSchedule.isEmpty() && syncSchedule.contains(player.getUniqueID()) && player.ticksExisted > 20)
             {
                 syncWearables(player);

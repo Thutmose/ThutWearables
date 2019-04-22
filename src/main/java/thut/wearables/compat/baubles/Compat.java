@@ -76,7 +76,6 @@ public class Compat
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onItemCapabilityAttach(AttachCapabilitiesEvent<ItemStack> event)
     {
-        boolean baubleContainer = false;
         boolean bauble = event.getObject().getItem() instanceof IBauble;
         boolean wearable = event.getObject().getItem() instanceof IWearable;
         IBauble baubleCap = bauble ? (IBauble) event.getObject().getItem() : null;
@@ -99,7 +98,7 @@ public class Compat
             BaubleWrapper wrapper = new BaubleWrapper(baubleCap);
             event.addCapability(BAUBLEWRAP, wrapper);
         }
-        if (wearable && !baubleContainer)
+        if (wearable && !bauble)
         {
             WearableWrapper wrapper = new WearableWrapper(wearableCap);
             event.addCapability(WEARABLEWRAP, wrapper);
