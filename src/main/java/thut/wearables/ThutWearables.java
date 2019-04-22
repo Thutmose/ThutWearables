@@ -64,7 +64,9 @@ import thut.wearables.inventory.WearableHandler;
 import thut.wearables.network.PacketGui;
 import thut.wearables.network.PacketSyncWearables;
 
-@Mod(modid = ThutWearables.MODID, name = "Thut Wearables", acceptableRemoteVersions = Reference.MINVERSION, version = ThutWearables.VERSION, guiFactory = ThutWearables.CONFIGGUI)
+@Mod(modid = ThutWearables.MODID, name = "Thut Wearables", acceptableRemoteVersions = Reference.MINVERSION,
+        dependencies = "before:quark;after:baubles",
+        version = ThutWearables.VERSION, guiFactory = ThutWearables.CONFIGGUI)
 public class ThutWearables
 {
     public static final String MODID     = Reference.MODID;
