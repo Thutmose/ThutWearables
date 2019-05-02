@@ -64,9 +64,7 @@ import thut.wearables.inventory.WearableHandler;
 import thut.wearables.network.PacketGui;
 import thut.wearables.network.PacketSyncWearables;
 
-@Mod(modid = ThutWearables.MODID, name = "Thut Wearables", acceptableRemoteVersions = Reference.MINVERSION,
-        dependencies = "before:quark;after:baubles",
-        version = ThutWearables.VERSION, guiFactory = ThutWearables.CONFIGGUI)
+@Mod(modid = ThutWearables.MODID, name = "Thut Wearables", acceptableRemoteVersions = Reference.MINVERSION, dependencies = "before:quark;after:baubles", version = ThutWearables.VERSION, guiFactory = ThutWearables.CONFIGGUI)
 public class ThutWearables
 {
     public static final String MODID     = Reference.MODID;
@@ -75,7 +73,8 @@ public class ThutWearables
 
     public static PlayerWearables getWearables(EntityLivingBase wearer)
     {
-        PlayerWearables wearables = WearableHandler.getPlayerData(wearer.getCachedUniqueIdString());
+        PlayerWearables wearables = null;
+        if (wearer instanceof EntityPlayer) wearables = WearableHandler.getPlayerData(wearer.getCachedUniqueIdString());
         if (wearer.hasCapability(WearableHandler.WEARABLES_CAP, null))
         {
             IWearableInventory inven = wearer.getCapability(WearableHandler.WEARABLES_CAP, null);
@@ -309,9 +308,9 @@ public class ThutWearables
     @SubscribeEvent
     public void startTracking(StartTracking event)
     {
-        if (event.getTarget() instanceof EntityPlayer && event.getEntityPlayer().isServerWorld())
+        if (event.getTarget() instanceof EntityLivingBase && event.getEntityPlayer().isServerWorld())
         {
-            packetPipeline.sendTo(new PacketSyncWearables((EntityPlayer) event.getTarget()),
+            packetPipeline.sendTo(new PacketSyncWearables((EntityLivingBase) event.getTarget()),
                     (EntityPlayerMP) event.getEntityPlayer());
         }
     }
@@ -391,7 +390,7 @@ public class ThutWearables
         if (event.getEntityLiving().getEntityWorld().isRemote) return;
         if (event.getEntity() instanceof EntityPlayer)
         {
-            EntityPlayer player = (EntityPlayer) event.getEntity();
+            EntityLivingBase player = (EntityLivingBase) event.getEntity();
             if (!syncSchedule.isEmpty() && syncSchedule.contains(player.getUniqueID()) && player.ticksExisted > 20)
             {
                 syncWearables(player);
@@ -440,7 +439,7 @@ public class ThutWearables
         GameData.register_impl(recipe);
     }
 
-    public static void syncWearables(EntityPlayer player)
+    public static void syncWearables(EntityLivingBase player)
     {
         if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT)
         {
@@ -459,6 +458,13 @@ public class ThutWearables
         @Override
         public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z)
         {
+            if (ID != -1)
+            {
+                Entity mob = world.getEntityByID(ID);
+                if (!(mob instanceof EntityLivingBase)) return null;
+                EntityLivingBase base = (EntityLivingBase) mob;
+                if (getWearables(base) != null) { return new ContainerWearables(base, player); }
+            }
             return new ContainerWearables(player);
         }
 
@@ -490,6 +496,13 @@ public class ThutWearables
         @Override
         public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z)
         {
+            if (ID != -1)
+            {
+                Entity mob = world.getEntityByID(ID);
+                if (!(mob instanceof EntityLivingBase)) return null;
+                EntityLivingBase base = (EntityLivingBase) mob;
+                if (getWearables(base) != null) { return new GuiWearables(base, player); }
+            }
             return new GuiWearables(player);
         }
     }

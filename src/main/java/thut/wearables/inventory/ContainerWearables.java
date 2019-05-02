@@ -4,17 +4,20 @@ import javax.annotation.Nullable;
 
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.inventory.InventoryCraftResult;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import thut.wearables.CompatWrapper;
@@ -26,14 +29,69 @@ public class ContainerWearables extends Container
     private static final EntityEquipmentSlot[] VALID_EQUIPMENT_SLOTS = new EntityEquipmentSlot[] {
             EntityEquipmentSlot.HEAD, EntityEquipmentSlot.CHEST, EntityEquipmentSlot.LEGS, EntityEquipmentSlot.FEET };
 
+    public static class ArmourInventory extends InventoryBasic
+    {
+        final EntityLivingBase mob;
+
+        public ArmourInventory(EntityLivingBase mob)
+        {
+            super("Armour Slots", true, 4);
+            this.mob = mob;
+            // Field index 2 is the non null list for this inventory.
+            ReflectionHelper.setPrivateValue(InventoryBasic.class, this, mob.getArmorInventoryList(), 2);
+        }
+
+        @Override
+        public ItemStack addItem(ItemStack stack)
+        {
+            // TODO Auto-generated method stub
+            return super.addItem(stack);
+        }
+
+        @Override
+        public ItemStack decrStackSize(int index, int count)
+        {
+            // TODO Auto-generated method stub
+            return super.decrStackSize(index, count);
+        }
+
+        @Override
+        public ItemStack getStackInSlot(int index)
+        {
+            // TODO Auto-generated method stub
+            return super.getStackInSlot(index);
+        }
+
+        @Override
+        public void setInventorySlotContents(int index, ItemStack stack)
+        {
+            // TODO Auto-generated method stub
+            super.setInventorySlotContents(index, stack);
+        }
+
+        @Override
+        public ItemStack removeStackFromSlot(int index)
+        {
+            // TODO Auto-generated method stub
+            return super.removeStackFromSlot(index);
+        }
+
+        @Override
+        public void clear()
+        {
+            // TODO Auto-generated method stub
+            super.clear();
+        }
+    }
+
     public static class WornSlot extends Slot
     {
-        final EntityPlayer     wearer;
+        final EntityLivingBase wearer;
         final EnumWearable     slot;
         final InventoryWrapper slots;
         private boolean        init = false;
 
-        public WornSlot(EntityPlayer player, InventoryWrapper inventoryIn, int index, int xPosition, int yPosition)
+        public WornSlot(EntityLivingBase player, InventoryWrapper inventoryIn, int index, int xPosition, int yPosition)
         {
             super(inventoryIn, index, xPosition, yPosition);
             this.slot = EnumWearable.getWearable(index);
@@ -116,7 +174,7 @@ public class ContainerWearables extends Container
         @Override
         public ItemStack onTake(EntityPlayer thePlayer, ItemStack stack)
         {
-            if (!wearer.world.isRemote)
+            if (!wearer.getEntityWorld().isRemote)
             {
                 EnumWearable.takeOff(thePlayer, stack, getSlotIndex());
             }
@@ -126,7 +184,7 @@ public class ContainerWearables extends Container
         @Override
         public void putStack(ItemStack stack)
         {
-            if (!wearer.world.isRemote) EnumWearable.putOn(wearer, stack, getSlotIndex());
+            if (!wearer.getEntityWorld().isRemote) EnumWearable.putOn(wearer, stack, getSlotIndex());
             super.putStack(stack);
         }
 
@@ -143,12 +201,18 @@ public class ContainerWearables extends Container
     /** The crafting matrix inventory. */
     public PlayerWearables   slots;
     /** Determines if inventory manipulation should be handled. */
-    final EntityPlayer       thePlayer;
+    final EntityLivingBase   wearer;
+    final boolean            hasPlayerSlots;
 
     public ContainerWearables(EntityPlayer player)
     {
-        this.thePlayer = player;
-        slots = ThutWearables.getWearables(player);
+        this(player, player);
+    }
+
+    public ContainerWearables(EntityLivingBase wearer, EntityPlayer player)
+    {
+        this.wearer = wearer;
+        slots = ThutWearables.getWearables(wearer);
         int xOffset = 116;
         int yOffset = 8;
         int xWidth = 18;
@@ -156,39 +220,45 @@ public class ContainerWearables extends Container
         InventoryWrapper wrapper = new InventoryWrapper(slots);
 
         // First row of ear - hat - ear
-        this.addSlotToContainer(new WornSlot(player, wrapper, 9, xOffset, yOffset));
-        this.addSlotToContainer(new WornSlot(player, wrapper, 12, xOffset + xWidth, yOffset));
-        this.addSlotToContainer(new WornSlot(player, wrapper, 10, xOffset + 2 * xWidth, yOffset));
+        this.addSlotToContainer(new WornSlot(wearer, wrapper, 9, xOffset, yOffset));
+        this.addSlotToContainer(new WornSlot(wearer, wrapper, 12, xOffset + xWidth, yOffset));
+        this.addSlotToContainer(new WornSlot(wearer, wrapper, 10, xOffset + 2 * xWidth, yOffset));
 
         // Second row of arm - eye - arm
-        this.addSlotToContainer(new WornSlot(player, wrapper, 2, xOffset, yOffset + yHeight));
-        this.addSlotToContainer(new WornSlot(player, wrapper, 11, xOffset + xWidth, yOffset + yHeight));
-        this.addSlotToContainer(new WornSlot(player, wrapper, 3, xOffset + 2 * xWidth, yOffset + yHeight));
+        this.addSlotToContainer(new WornSlot(wearer, wrapper, 2, xOffset, yOffset + yHeight));
+        this.addSlotToContainer(new WornSlot(wearer, wrapper, 11, xOffset + xWidth, yOffset + yHeight));
+        this.addSlotToContainer(new WornSlot(wearer, wrapper, 3, xOffset + 2 * xWidth, yOffset + yHeight));
 
         // Third row of finger - neck - finger
-        this.addSlotToContainer(new WornSlot(player, wrapper, 0, xOffset, yOffset + yHeight * 2));
-        this.addSlotToContainer(new WornSlot(player, wrapper, 6, xOffset + xWidth, yOffset + yHeight * 2));
-        this.addSlotToContainer(new WornSlot(player, wrapper, 1, xOffset + 2 * xWidth, yOffset + yHeight * 2));
+        this.addSlotToContainer(new WornSlot(wearer, wrapper, 0, xOffset, yOffset + yHeight * 2));
+        this.addSlotToContainer(new WornSlot(wearer, wrapper, 6, xOffset + xWidth, yOffset + yHeight * 2));
+        this.addSlotToContainer(new WornSlot(wearer, wrapper, 1, xOffset + 2 * xWidth, yOffset + yHeight * 2));
 
         // Fourth row of ankle - waist - ankle
-        this.addSlotToContainer(new WornSlot(player, wrapper, 4, xOffset, yOffset + yHeight * 3));
-        this.addSlotToContainer(new WornSlot(player, wrapper, 8, xOffset + xWidth, yOffset + yHeight * 3));
-        this.addSlotToContainer(new WornSlot(player, wrapper, 5, xOffset + 2 * xWidth, yOffset + yHeight * 3));
+        this.addSlotToContainer(new WornSlot(wearer, wrapper, 4, xOffset, yOffset + yHeight * 3));
+        this.addSlotToContainer(new WornSlot(wearer, wrapper, 8, xOffset + xWidth, yOffset + yHeight * 3));
+        this.addSlotToContainer(new WornSlot(wearer, wrapper, 5, xOffset + 2 * xWidth, yOffset + yHeight * 3));
 
         // back slot
-        this.addSlotToContainer(new WornSlot(player, wrapper, 7, xOffset - xWidth, yOffset + yHeight * 3));
+        this.addSlotToContainer(new WornSlot(wearer, wrapper, 7, xOffset - xWidth, yOffset + yHeight * 3));
 
-        bindVanillaInventory(player.inventory);
+        hasPlayerSlots = player != null;
+        if (hasPlayerSlots) bindVanillaInventory(player.inventory);
     }
 
     private void bindVanillaInventory(InventoryPlayer playerInventory)
     {
+        IInventory armour = new ArmourInventory(wearer);
 
         // Player armour slots.
         for (int k = 0; k < 4; ++k)
         {
             final EntityEquipmentSlot entityequipmentslot = VALID_EQUIPMENT_SLOTS[k];
-            this.addSlotToContainer(new Slot(playerInventory, 36 + (3 - k), 8, 8 + k * 18)
+            int index = 36 + (3 - k);
+
+            index = 3 - k;
+
+            this.addSlotToContainer(new Slot(armour, index, 8, 8 + k * 18)
             {
                 /** Returns the maximum stack size for a given slot (usually the
                  * same as getInventoryStackLimit(), but 1 in the case of armor
@@ -202,7 +272,7 @@ public class ContainerWearables extends Container
                  * used for armor slots as well as furnace fuel. */
                 public boolean isItemValid(ItemStack stack)
                 {
-                    return stack.getItem().isValidArmor(stack, entityequipmentslot, playerInventory.player);
+                    return stack.getItem().isValidArmor(stack, entityequipmentslot, wearer);
                 }
 
                 /** Return whether this slot's stack can be taken from this
@@ -275,7 +345,7 @@ public class ContainerWearables extends Container
             ItemStack itemstack1 = slot.getStack();
             itemstack = itemstack1.copy();
 
-            int numRows = 3;
+            int numRows = hasPlayerSlots ? 3 : 0;
             if (index < numRows * 9)
             {
                 if (!this.mergeItemStack(itemstack1, numRows * 9, this.inventorySlots.size(),

@@ -6,7 +6,6 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.world.World;
@@ -27,7 +26,7 @@ public class PacketSyncWearables implements IMessage, IMessageHandler<PacketSync
         data = new NBTTagCompound();
     }
 
-    public PacketSyncWearables(EntityPlayer player)
+    public PacketSyncWearables(EntityLivingBase player)
     {
         this();
         data.setInteger("I", player.getEntityId());
@@ -75,7 +74,7 @@ public class PacketSyncWearables implements IMessage, IMessageHandler<PacketSync
         World world = Minecraft.getMinecraft().world;
         if (world == null) return;
         Entity p = world.getEntityByID(message.data.getInteger("I"));
-        if (p != null && p instanceof EntityPlayer)
+        if (p != null && p instanceof EntityLivingBase)
         {
             PlayerWearables cap = ThutWearables.getWearables((EntityLivingBase) p);
             cap.readFromNBT(message.data);

@@ -245,7 +245,7 @@ public class PlayerWearables
     @Override
     public boolean hasCapability(Capability<?> capability, EnumFacing facing)
     {
-        return capability == WearableHandler.WEARABLES_CAP;
+        return WearableHandler.WEARABLES_CAP.equals(capability);
     }
 
     @Override
@@ -264,7 +264,7 @@ public class PlayerWearables
     @Override
     public void deserializeNBT(NBTTagCompound nbt)
     {
-        readFromNBT(nbt );
+        readFromNBT(nbt);
     }
 
 }

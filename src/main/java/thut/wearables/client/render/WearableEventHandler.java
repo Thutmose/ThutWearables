@@ -7,11 +7,11 @@ import org.lwjgl.input.Keyboard;
 
 import com.google.common.collect.Sets;
 
+import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.renderer.entity.RenderLivingBase;
-import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraftforge.client.event.RenderPlayerEvent;
+import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
@@ -22,9 +22,9 @@ import thut.wearables.network.PacketGui;
 
 public class WearableEventHandler
 {
-    private Set<RenderPlayer> addedBaubles = Sets.newHashSet();
-    KeyBinding                toggleGui;
-    KeyBinding[]              keys         = new KeyBinding[13];
+    private Set<RenderLivingBase<?>> addedBaubles = Sets.newHashSet();
+    KeyBinding                       toggleGui;
+    KeyBinding[]                     keys         = new KeyBinding[13];
 
     public WearableEventHandler()
     {
@@ -70,12 +70,18 @@ public class WearableEventHandler
     }
 
     @SubscribeEvent
-    public void addBaubleRender(RenderPlayerEvent.Post event)
+    public void addWearableRenderLayer(RenderLivingEvent.Post<?> event)
     {
+        // Only apply to model bipeds.
+        if (!(event.getRenderer().getMainModel() instanceof ModelBiped)) return;
+        // Only one layer per renderer.
         if (addedBaubles.contains(event.getRenderer())) { return; }
+
+        // Add the layer.
         List<LayerRenderer<?>> layerRenderers = ReflectionHelper.getPrivateValue(RenderLivingBase.class,
                 event.getRenderer(), "layerRenderers", "field_177097_h", "i");
-        layerRenderers.add(1, new WearablesRenderer(event.getRenderer()));
+        int index = Math.min(1, layerRenderers.size());
+        layerRenderers.add(index, new WearablesRenderer(event.getRenderer()));
         addedBaubles.add(event.getRenderer());
     }
 }

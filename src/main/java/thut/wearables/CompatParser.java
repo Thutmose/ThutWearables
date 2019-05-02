@@ -145,7 +145,7 @@ public class CompatParser
         }
         catch (Throwable e)
         {
-            e.printStackTrace();
+            System.err.println("Error finding compat classes: " + e);
         }
     }
 }

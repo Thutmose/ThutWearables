@@ -3,6 +3,7 @@ package thut.wearables.client.gui;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.InventoryEffectRenderer;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import thut.wearables.ThutWearables;
@@ -17,10 +18,17 @@ public class GuiWearables extends InventoryEffectRenderer
     private float                        oldMouseX;
     /** The old y position of the mouse pointer */
     private float                        oldMouseY;
+    private final EntityLivingBase       toRender;
 
     public GuiWearables(EntityPlayer player)
     {
-        super(new ContainerWearables(player));
+        this(player, player);
+    }
+
+    public GuiWearables(EntityLivingBase wearer, EntityPlayer player)
+    {
+        super(new ContainerWearables(wearer, player));
+        this.toRender = wearer;
     }
 
     /** Adds the buttons (and other controls) to the screen in question. */
@@ -51,6 +59,6 @@ public class GuiWearables extends InventoryEffectRenderer
         int j = this.guiTop;
         this.drawTexturedModalRect(i, j, 0, 0, this.xSize, this.ySize);
         GuiInventory.drawEntityOnScreen(i + 51, j + 75, 30, i + 51 - this.oldMouseX, j + 75 - 50 - this.oldMouseY,
-                this.mc.player);
+                this.toRender);
     }
 }
