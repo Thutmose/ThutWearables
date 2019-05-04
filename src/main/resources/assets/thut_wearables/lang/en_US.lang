@@ -1,2 +1,6 @@
 button.wearables.off=Close
 button.wearables.on=Open
+
+wearables.keyuse.left=Left Keybind: %s
+wearables.keyuse.right=Right Keybind: %s
+wearables.keyuse.single=Keybind: %s
