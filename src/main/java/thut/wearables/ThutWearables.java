@@ -42,6 +42,7 @@ import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
@@ -61,6 +62,7 @@ import thut.wearables.inventory.ContainerWearables;
 import thut.wearables.inventory.IWearableInventory;
 import thut.wearables.inventory.PlayerWearables;
 import thut.wearables.inventory.WearableHandler;
+import thut.wearables.network.MouseOverPacket;
 import thut.wearables.network.PacketGui;
 import thut.wearables.network.PacketSyncWearables;
 
@@ -249,6 +251,7 @@ public class ThutWearables
         handleConfig(true);
         packetPipeline.registerMessage(PacketGui.class, PacketGui.class, 1, Side.SERVER);
         packetPipeline.registerMessage(PacketSyncWearables.class, PacketSyncWearables.class, 2, Side.CLIENT);
+        packetPipeline.registerMessage(MouseOverPacket.Handler.class, MouseOverPacket.class, 3, Side.CLIENT);
         MinecraftForge.EVENT_BUS.register(this);
         NetworkRegistry.INSTANCE.registerGuiHandler(this, proxy);
         CapabilityManager.INSTANCE.register(IActiveWearable.class, new Capability.IStorage<IActiveWearable>()
@@ -284,6 +287,12 @@ public class ThutWearables
                     ((PlayerWearables) instance).readFromNBT((NBTTagCompound) nbt);
             }
         }, PlayerWearables::new);
+    }
+
+    @EventHandler
+    public void serverLoad(FMLServerStartingEvent event)
+    {
+        event.registerServerCommand(new CommandGui());
     }
 
     static HashSet<UUID> syncSchedule = new HashSet<UUID>();

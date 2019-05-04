@@ -65,6 +65,12 @@ public class PacketGui implements IMessage, IMessageHandler<PacketGui, IMessage>
             player.openGui(ThutWearables.instance, -1, player.getEntityWorld(), 0, 0, 0);
             return;
         }
+        if (message.data.hasKey("w_open_target_"))
+        {
+            player.openGui(ThutWearables.instance, message.data.getInteger("w_open_target_"), player.getEntityWorld(),
+                    0, 0, 0);
+            return;
+        }
         byte slot = message.data.getByte("S");
         ItemStack stack = ThutWearables.getWearables(player).getStackInSlot(slot);
         if (stack != null) EnumWearable.interact(player, stack, slot);
