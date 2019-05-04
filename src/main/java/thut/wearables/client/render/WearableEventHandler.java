@@ -24,6 +24,7 @@ import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import thut.wearables.EnumWearable;
 import thut.wearables.IActiveWearable;
+import thut.wearables.IWearable;
 import thut.wearables.ThutWearables;
 import thut.wearables.network.PacketGui;
 
@@ -87,9 +88,11 @@ public class WearableEventHandler
     @SubscribeEvent
     public void onToolTip(ItemTooltipEvent evt)
     {
-        if (evt.getItemStack().hasCapability(IActiveWearable.WEARABLE_CAP, null))
+        if (evt.getItemStack().hasCapability(IActiveWearable.WEARABLE_CAP, null)
+                || evt.getItemStack().getItem() instanceof IWearable)
         {
-            IActiveWearable wear = evt.getItemStack().getCapability(IActiveWearable.WEARABLE_CAP, null);
+            IWearable wear = evt.getItemStack().getCapability(IActiveWearable.WEARABLE_CAP, null);
+            if (wear == null) wear = (IWearable) evt.getItemStack().getItem();
             EnumWearable slot = wear.getSlot(evt.getItemStack());
             String key = keys[slot.index].getDisplayName();
             String message = "";
