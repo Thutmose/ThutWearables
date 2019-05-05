@@ -455,7 +455,7 @@ public class ThutWearables
             Thread.dumpStack();
             return;
         }
-        packetPipeline.sendToAll(new PacketSyncWearables(player));
+        packetPipeline.sendToAllTracking(new PacketSyncWearables(player), player);
     }
 
     public static class CommonProxy implements IGuiHandler

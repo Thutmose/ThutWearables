@@ -328,7 +328,7 @@ public class ContainerWearables extends Container
         super.onContainerClosed(player);
         if (!player.world.isRemote)
         {
-            ThutWearables.syncWearables(player);
+            ThutWearables.syncWearables(wearer);
         }
     }
 
