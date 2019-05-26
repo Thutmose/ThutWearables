@@ -263,6 +263,7 @@ public class ContainerWearables extends Container
                 /** Returns the maximum stack size for a given slot (usually the
                  * same as getInventoryStackLimit(), but 1 in the case of armor
                  * slots) */
+                @Override
                 public int getSlotStackLimit()
                 {
                     return 1;
@@ -270,6 +271,7 @@ public class ContainerWearables extends Container
 
                 /** Check if the stack is allowed to be placed in this slot,
                  * used for armor slots as well as furnace fuel. */
+                @Override
                 public boolean isItemValid(ItemStack stack)
                 {
                     return stack.getItem().isValidArmor(stack, entityequipmentslot, wearer);
@@ -277,6 +279,7 @@ public class ContainerWearables extends Container
 
                 /** Return whether this slot's stack can be taken from this
                  * slot. */
+                @Override
                 public boolean canTakeStack(EntityPlayer playerIn)
                 {
                     ItemStack itemstack = this.getStack();
@@ -284,6 +287,7 @@ public class ContainerWearables extends Container
                             && EnchantmentHelper.hasBindingCurse(itemstack) ? false : super.canTakeStack(playerIn);
                 }
 
+                @Override
                 @Nullable
                 @SideOnly(Side.CLIENT)
                 public String getSlotTexture()

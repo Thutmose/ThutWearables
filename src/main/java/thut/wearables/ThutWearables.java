@@ -359,8 +359,8 @@ public class ThutWearables
                 EntityItem drop = new EntityItem(player.getEntityWorld(), player.posX, d0, player.posZ, stack);
                 float f = player.getRNG().nextFloat() * 0.5F;
                 float f1 = player.getRNG().nextFloat() * ((float) Math.PI * 2F);
-                drop.motionX = (double) (-MathHelper.sin(f1) * f);
-                drop.motionZ = (double) (MathHelper.cos(f1) * f);
+                drop.motionX = -MathHelper.sin(f1) * f;
+                drop.motionZ = MathHelper.cos(f1) * f;
                 drop.motionY = 0.20000000298023224D;
                 event.getDrops().add(drop);
                 cap.setStackInSlot(i, ItemStack.EMPTY);
@@ -372,7 +372,7 @@ public class ThutWearables
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void respawn(PlayerRespawnEvent event)
     {
-        EntityPlayer wearer = (EntityPlayer) event.player;
+        EntityPlayer wearer = event.player;
         if (wearer instanceof EntityPlayerMP && (toKeep.contains(wearer.getUniqueID()) || event.isEndConquered()))
         {
             NBTTagCompound tag = player_inventory_cache.get(wearer.getUniqueID()).serializeNBT();

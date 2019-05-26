@@ -76,6 +76,8 @@ public class Compat
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onItemCapabilityAttach(AttachCapabilitiesEvent<ItemStack> event)
     {
+        if (IActiveWearable.WEARABLE_CAP == null) return;
+        if (BaublesCapabilities.CAPABILITY_ITEM_BAUBLE == null) return;
         boolean bauble = event.getObject().getItem() instanceof IBauble;
         boolean wearable = event.getObject().getItem() instanceof IWearable;
         IBauble baubleCap = bauble ? (IBauble) event.getObject().getItem() : null;
