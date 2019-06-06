@@ -88,7 +88,8 @@ public enum EnumWearable
                     ((IActiveWearable) itemstack.getItem()).onUpdate(player, itemstack, slot, subIndex);
                 else if (player instanceof EntityPlayer)
                     itemstack.getItem().onArmorTick(player.getEntityWorld(), (EntityPlayer) player, itemstack);
-                else itemstack.getItem().onUpdate(itemstack, player.getEntityWorld(), player, slot.index + subIndex, false);
+                else itemstack.getItem().onUpdate(itemstack, player.getEntityWorld(), player, slot.index + subIndex,
+                        false);
             }
 
             @Override
@@ -139,6 +140,46 @@ public enum EnumWearable
     public static void registerWearableChecker(IWearableChecker checker)
     {
         checkers.add(checker);
+    }
+
+    public static String getIcon(int index)
+    {
+        String tex = null;
+        EnumWearable slot = EnumWearable.getWearable(index);
+        int subIndex = EnumWearable.getSubIndex(index);
+        switch (slot)
+        {
+        case ANKLE:
+            tex = ThutWearables.MODID + ":items/empty_ankle_" + (subIndex == 0 ? "left" : "right");
+            break;
+        case BACK:
+            tex = ThutWearables.MODID + ":items/empty_back";
+            break;
+        case EAR:
+            tex = ThutWearables.MODID + ":items/empty_ear_" + (subIndex == 0 ? "left" : "right");
+            break;
+        case EYE:
+            tex = ThutWearables.MODID + ":items/empty_eye";
+            break;
+        case FINGER:
+            tex = ThutWearables.MODID + ":items/empty_finger_" + (subIndex == 0 ? "left" : "right");
+            break;
+        case HAT:
+            tex = ThutWearables.MODID + ":items/empty_hat";
+            break;
+        case NECK:
+            tex = ThutWearables.MODID + ":items/empty_neck";
+            break;
+        case WAIST:
+            tex = ThutWearables.MODID + ":items/empty_waist";
+            break;
+        case WRIST:
+            tex = ThutWearables.MODID + ":items/empty_wrist_" + (subIndex == 0 ? "left" : "right");
+            break;
+        default:
+            break;
+        }
+        return tex;
     }
 
     public static EnumWearable getSlot(ItemStack item)

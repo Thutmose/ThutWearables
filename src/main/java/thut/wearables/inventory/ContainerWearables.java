@@ -16,7 +16,6 @@ import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -40,48 +39,6 @@ public class ContainerWearables extends Container
             // Field index 2 is the non null list for this inventory.
             ReflectionHelper.setPrivateValue(InventoryBasic.class, this, mob.getArmorInventoryList(), 2);
         }
-
-        @Override
-        public ItemStack addItem(ItemStack stack)
-        {
-            // TODO Auto-generated method stub
-            return super.addItem(stack);
-        }
-
-        @Override
-        public ItemStack decrStackSize(int index, int count)
-        {
-            // TODO Auto-generated method stub
-            return super.decrStackSize(index, count);
-        }
-
-        @Override
-        public ItemStack getStackInSlot(int index)
-        {
-            // TODO Auto-generated method stub
-            return super.getStackInSlot(index);
-        }
-
-        @Override
-        public void setInventorySlotContents(int index, ItemStack stack)
-        {
-            // TODO Auto-generated method stub
-            super.setInventorySlotContents(index, stack);
-        }
-
-        @Override
-        public ItemStack removeStackFromSlot(int index)
-        {
-            // TODO Auto-generated method stub
-            return super.removeStackFromSlot(index);
-        }
-
-        @Override
-        public void clear()
-        {
-            // TODO Auto-generated method stub
-            super.clear();
-        }
     }
 
     public static class WornSlot extends Slot
@@ -89,7 +46,6 @@ public class ContainerWearables extends Container
         final EntityLivingBase wearer;
         final EnumWearable     slot;
         final InventoryWrapper slots;
-        private boolean        init = false;
 
         public WornSlot(EntityLivingBase player, InventoryWrapper inventoryIn, int index, int xPosition, int yPosition)
         {
@@ -100,67 +56,19 @@ public class ContainerWearables extends Container
         }
 
         @Override
+        @Nullable
         @SideOnly(Side.CLIENT)
-        public net.minecraft.client.renderer.texture.TextureAtlasSprite getBackgroundSprite()
+        public TextureAtlasSprite getBackgroundSprite()
         {
-            if (!init)
-            {
-                String tex = null;
-                switch (slot)
-                {
-                case ANKLE:
-                    tex = ThutWearables.MODID + ":textures/items/empty_ankle_"
-                            + (EnumWearable.getSubIndex(getSlotIndex()) == 0 ? "left" : "right");
-                    break;
-                case BACK:
-                    tex = ThutWearables.MODID + ":textures/items/empty_back";
-                    break;
-                case EAR:
-                    tex = ThutWearables.MODID + ":textures/items/empty_ear_"
-                            + (EnumWearable.getSubIndex(getSlotIndex()) == 0 ? "left" : "right");
-                    break;
-                case EYE:
-                    tex = ThutWearables.MODID + ":textures/items/empty_eye";
-                    break;
-                case FINGER:
-                    tex = ThutWearables.MODID + ":textures/items/empty_finger_"
-                            + (EnumWearable.getSubIndex(getSlotIndex()) == 0 ? "left" : "right");
-                    break;
-                case HAT:
-                    tex = ThutWearables.MODID + ":textures/items/empty_hat";
-                    break;
-                case NECK:
-                    tex = ThutWearables.MODID + ":textures/items/empty_neck";
-                    break;
-                case WAIST:
-                    tex = ThutWearables.MODID + ":textures/items/empty_waist";
-                    break;
-                case WRIST:
-                    tex = ThutWearables.MODID + ":textures/items/empty_wrist_"
-                            + (EnumWearable.getSubIndex(getSlotIndex()) == 0 ? "left" : "right");
-                    break;
-                default:
-                    break;
-                }
-                if (tex != null)
-                {
-                    this.setBackgroundName(tex);
-                    tex = tex + ".png";
-                    this.setBackgroundLocation(new ResourceLocation(tex));
-                    TextureAtlasSprite sprite = getBackgroundMap().getTextureExtry(getSlotTexture());
-                    if (sprite == null)
-                    {
-                        getBackgroundMap().registerSprite(getBackgroundLocation());
-                        sprite = super.getBackgroundSprite();
-                        sprite.setIconHeight(16);
-                        sprite.setIconWidth(16);
-                        sprite.initSprite(16, 16, 0, 0, false);
-                    }
-                }
-                init = true;
-            }
-            TextureAtlasSprite sprite = super.getBackgroundSprite();
-            return sprite;
+            return getBackgroundMap().getTextureExtry(getSlotTexture());
+        }
+
+        @Override
+        @Nullable
+        @SideOnly(Side.CLIENT)
+        public String getSlotTexture()
+        {
+            return EnumWearable.getIcon(getSlotIndex());
         }
 
         @Override

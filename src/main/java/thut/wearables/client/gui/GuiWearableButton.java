@@ -1,7 +1,5 @@
 package thut.wearables.client.gui;
 
-import org.lwjgl.opengl.GL11;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
@@ -46,9 +44,6 @@ public class GuiWearableButton extends GuiButton
             this.hovered = xx >= this.x + potionShift && yy >= this.y && xx < this.x + this.width + potionShift
                     && yy < this.y + this.height;
             int k = this.getHoverState(this.hovered);
-            GlStateManager.enableBlend();
-            GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-            GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
             if (k == 1)
             {
@@ -60,9 +55,7 @@ public class GuiWearableButton extends GuiButton
                 this.drawCenteredString(fontrenderer, this.displayString, this.x + 5 + potionShift,
                         this.y + this.height, this.packedFGColour);
             }
-
             this.mouseDragged(mc, xx, yy);
-
         }
     }
 

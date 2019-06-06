@@ -9,6 +9,7 @@ import java.util.UUID;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
@@ -23,12 +24,14 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.event.entity.player.PlayerDropsEvent;
@@ -45,13 +48,13 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.GameData;
 import thut.wearables.CompatClass.Phase;
 import thut.wearables.client.gui.GuiEvents;
@@ -295,25 +298,30 @@ public class ThutWearables
         event.registerServerCommand(new CommandGui());
     }
 
-    static HashSet<UUID> syncSchedule = new HashSet<UUID>();
-
-    @SubscribeEvent
-    public void PlayerLoggedInEvent(PlayerLoggedInEvent event)
-    {
-        Side side = FMLCommonHandler.instance().getEffectiveSide();
-        if (side == Side.SERVER)
-        {
-            syncSchedule.add(event.player.getUniqueID());
-        }
-    }
-
     @SubscribeEvent
     public void PlayerLoggedOutEvent(PlayerLoggedOutEvent event)
     {
-        syncSchedule.remove(event.player.getUniqueID());
         player_inventory_cache.remove(event.player.getUniqueID());
     }
 
+    /** Syncs wearables to the player when they join a world. This fixes client
+     * issues when they use nether portals, etc
+     * 
+     * @param event */
+    @SubscribeEvent
+    public void joinWorld(EntityJoinWorldEvent event)
+    {
+        if (event.getWorld().isRemote) return;
+        if (event.getEntity() instanceof EntityPlayerMP)
+        {
+            packetPipeline.sendTo(new PacketSyncWearables((EntityLivingBase) event.getEntity()),
+                    (EntityPlayerMP) event.getEntity());
+        }
+    }
+
+    /** Syncs wearables of other mobs to player when they start tracking them.
+     * 
+     * @param event */
     @SubscribeEvent
     public void startTracking(StartTracking event)
     {
@@ -386,6 +394,7 @@ public class ThutWearables
     @SubscribeEvent
     public void playerTick(LivingUpdateEvent event)
     {
+        if (event.getEntityLiving().getEntityWorld().isRemote) return;
         if (event.getEntity() instanceof EntityPlayer)
         {
             EntityPlayer wearer = (EntityPlayer) event.getEntity();
@@ -395,20 +404,6 @@ public class ThutWearables
                 EnumWearable.tick(wearer, wearables.getStackInSlot(i), i);
             }
             if (wearer instanceof EntityPlayerMP) player_inventory_cache.put(wearer.getUniqueID(), wearables);
-        }
-        if (event.getEntityLiving().getEntityWorld().isRemote) return;
-        if (event.getEntity() instanceof EntityPlayer)
-        {
-            EntityLivingBase player = (EntityLivingBase) event.getEntity();
-            if (!syncSchedule.isEmpty() && syncSchedule.contains(player.getUniqueID()) && player.ticksExisted > 20)
-            {
-                syncWearables(player);
-                for (EntityPlayer player2 : event.getEntity().getEntityWorld().playerEntities)
-                {
-                    packetPipeline.sendTo(new PacketSyncWearables(player2), (EntityPlayerMP) player);
-                }
-                syncSchedule.remove(player.getUniqueID());
-            }
         }
     }
 
@@ -446,6 +441,22 @@ public class ThutWearables
     {
         IRecipe recipe = new RecipeDye().setRegistryName(new ResourceLocation(MODID, "dye"));
         GameData.register_impl(recipe);
+    }
+
+    @SideOnly(Side.CLIENT)
+    @SubscribeEvent
+    public void textureStitch(TextureStitchEvent.Pre event)
+    {
+        String tex = null;
+        for (int i = 0; i < EnumWearable.BYINDEX.length; i++)
+        {
+            tex = EnumWearable.getIcon(i);
+            ResourceLocation location = new ResourceLocation(tex);
+            TextureAtlasSprite sprite = event.getMap().registerSprite(location);
+            sprite.setIconHeight(16);
+            sprite.setIconWidth(16);
+            sprite.initSprite(16, 16, 0, 0, false);
+        }
     }
 
     public static void syncWearables(EntityLivingBase player)
