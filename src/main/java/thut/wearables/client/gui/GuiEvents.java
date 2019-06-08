@@ -8,11 +8,11 @@ import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.gui.inventory.GuiContainerCreative;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.resources.I18n;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import thut.wearables.ThutWearables;
 import thut.wearables.network.PacketGui;
 
@@ -36,7 +36,7 @@ public class GuiEvents
     {
     }
 
-    @SideOnly(value = Side.CLIENT)
+    @OnlyIn(value = Dist.CLIENT)
     @SubscribeEvent
     public void guiPostInit(GuiScreenEvent.InitGuiEvent.Post event)
     {
@@ -64,7 +64,7 @@ public class GuiEvents
         }
     }
 
-    @SideOnly(value = Side.CLIENT)
+    @OnlyIn(value = Dist.CLIENT)
     @SubscribeEvent
     public void guiPostAction(GuiScreenEvent.ActionPerformedEvent.Post event)
     {

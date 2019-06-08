@@ -4,9 +4,9 @@ import javax.annotation.Nullable;
 
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryBasic;
@@ -14,9 +14,9 @@ import net.minecraft.inventory.InventoryCraftResult;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import thut.wearables.CompatWrapper;
 import thut.wearables.EnumWearable;
 import thut.wearables.ThutWearables;
@@ -28,9 +28,9 @@ public class ContainerWearables extends Container
 
     public static class ArmourInventory extends InventoryBasic
     {
-        final EntityLivingBase mob;
+        final LivingEntity mob;
 
-        public ArmourInventory(EntityLivingBase mob)
+        public ArmourInventory(LivingEntity mob)
         {
             super("Armour Slots", true, 4);
             this.mob = mob;
@@ -41,11 +41,11 @@ public class ContainerWearables extends Container
 
     public static class WornSlot extends Slot
     {
-        final EntityLivingBase wearer;
+        final LivingEntity wearer;
         final EnumWearable     slot;
         final InventoryWrapper slots;
 
-        public WornSlot(EntityLivingBase player, InventoryWrapper inventoryIn, int index, int xPosition, int yPosition)
+        public WornSlot(LivingEntity player, InventoryWrapper inventoryIn, int index, int xPosition, int yPosition)
         {
             super(inventoryIn, index, xPosition, yPosition);
             this.slot = EnumWearable.getWearable(index);
@@ -55,7 +55,7 @@ public class ContainerWearables extends Container
 
         @Override
         @Nullable
-        @SideOnly(Side.CLIENT)
+        @OnlyIn(Dist.CLIENT)
         public TextureAtlasSprite getBackgroundSprite()
         {
             return getBackgroundMap().getTextureExtry(getSlotTexture());
@@ -63,7 +63,7 @@ public class ContainerWearables extends Container
 
         @Override
         @Nullable
-        @SideOnly(Side.CLIENT)
+        @OnlyIn(Dist.CLIENT)
         public String getSlotTexture()
         {
             return EnumWearable.getIcon(getSlotIndex());
@@ -78,7 +78,7 @@ public class ContainerWearables extends Container
         }
 
         @Override
-        public ItemStack onTake(EntityPlayer thePlayer, ItemStack stack)
+        public ItemStack onTake(PlayerEntity thePlayer, ItemStack stack)
         {
             if (!wearer.getEntityWorld().isRemote)
             {
@@ -96,7 +96,7 @@ public class ContainerWearables extends Container
 
         @Override
         /** Return whether this slot's stack can be taken from this slot. */
-        public boolean canTakeStack(EntityPlayer playerIn)
+        public boolean canTakeStack(PlayerEntity playerIn)
         {
             return EnumWearable.canTakeOff(wearer, getStack(), getSlotIndex());
         }
@@ -107,15 +107,15 @@ public class ContainerWearables extends Container
     /** The crafting matrix inventory. */
     public PlayerWearables   slots;
     /** Determines if inventory manipulation should be handled. */
-    final EntityLivingBase   wearer;
+    final LivingEntity   wearer;
     final boolean            hasPlayerSlots;
 
-    public ContainerWearables(EntityPlayer player)
+    public ContainerWearables(PlayerEntity player)
     {
         this(player, player);
     }
 
-    public ContainerWearables(EntityLivingBase wearer, EntityPlayer player)
+    public ContainerWearables(LivingEntity wearer, PlayerEntity player)
     {
         this.wearer = wearer;
         slots = ThutWearables.getWearables(wearer);
@@ -186,7 +186,7 @@ public class ContainerWearables extends Container
                 /** Return whether this slot's stack can be taken from this
                  * slot. */
                 @Override
-                public boolean canTakeStack(EntityPlayer playerIn)
+                public boolean canTakeStack(PlayerEntity playerIn)
                 {
                     ItemStack itemstack = this.getStack();
                     return !itemstack.isEmpty() && !playerIn.isCreative()
@@ -195,7 +195,7 @@ public class ContainerWearables extends Container
 
                 @Override
                 @Nullable
-                @SideOnly(Side.CLIENT)
+                @OnlyIn(Dist.CLIENT)
                 public String getSlotTexture()
                 {
                     return ItemArmor.EMPTY_SLOT_NAMES[entityequipmentslot.getIndex()];
@@ -223,7 +223,7 @@ public class ContainerWearables extends Container
         {
             @Override
             @Nullable
-            @SideOnly(Side.CLIENT)
+            @OnlyIn(Dist.CLIENT)
             public String getSlotTexture()
             {
                 return "minecraft:items/empty_armor_slot_shield";
@@ -233,7 +233,7 @@ public class ContainerWearables extends Container
 
     /** Called when the container is closed. */
     @Override
-    public void onContainerClosed(EntityPlayer player)
+    public void onContainerClosed(PlayerEntity player)
     {
         super.onContainerClosed(player);
         if (!player.world.isRemote)
@@ -245,7 +245,7 @@ public class ContainerWearables extends Container
     /** Called when a player shift-clicks on a slot. You must override this or
      * you will crash when someone does that. */
     @Override
-    public ItemStack transferStackInSlot(EntityPlayer par1EntityPlayer, int index)
+    public ItemStack transferStackInSlot(PlayerEntity par1PlayerEntity, int index)
     {
         ItemStack itemstack = ItemStack.EMPTY;
         Slot slot = this.inventorySlots.get(index);
@@ -276,7 +276,7 @@ public class ContainerWearables extends Container
     }
 
     @Override
-    public boolean canInteractWith(EntityPlayer playerIn)
+    public boolean canInteractWith(PlayerEntity playerIn)
     {
         return true;
     }

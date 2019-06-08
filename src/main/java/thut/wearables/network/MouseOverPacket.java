@@ -5,7 +5,7 @@ import javax.xml.ws.handler.MessageContext;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 
@@ -33,7 +33,7 @@ public class MouseOverPacket implements IMessage
         @Override
         public IMessage onMessage(MouseOverPacket message, MessageContext ctx)
         {
-            RayTraceResult pos = Minecraft.getMinecraft().objectMouseOver;
+            RayTraceResult pos = Minecraft.getInstance().objectMouseOver;
             if (pos != null)
             {
                 if (pos.entityHit != null)
@@ -45,7 +45,7 @@ public class MouseOverPacket implements IMessage
                 }
                 else
                 {
-                    Minecraft.getMinecraft().player.sendMessage(new TextComponentTranslation("wearables.other.fail"));
+                    Minecraft.getInstance().player.sendMessage(new TranslationTextComponent("wearables.other.fail"));
                 }
             }
             return null;

@@ -7,27 +7,27 @@ import javax.xml.ws.handler.MessageContext;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import thut.wearables.ThutWearables;
 import thut.wearables.inventory.PlayerWearables;
 
 public class PacketSyncWearables implements IMessage, IMessageHandler<PacketSyncWearables, IMessage>
 {
-    NBTTagCompound data;
+    CompoundNBT data;
 
     public PacketSyncWearables()
     {
-        data = new NBTTagCompound();
+        data = new CompoundNBT();
     }
 
-    public PacketSyncWearables(EntityLivingBase player)
+    public PacketSyncWearables(LivingEntity player)
     {
         this();
         data.setInteger("I", player.getEntityId());
@@ -54,11 +54,11 @@ public class PacketSyncWearables implements IMessage, IMessageHandler<PacketSync
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @Override
     public IMessage onMessage(final PacketSyncWearables message, MessageContext ctx)
     {
-        Minecraft.getMinecraft().addScheduledTask(new Runnable()
+        Minecraft.getInstance().addScheduledTask(new Runnable()
         {
             @Override
             public void run()
@@ -69,15 +69,15 @@ public class PacketSyncWearables implements IMessage, IMessageHandler<PacketSync
         return null;
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     void processMessage(PacketSyncWearables message)
     {
-        World world = Minecraft.getMinecraft().world;
+        World world = Minecraft.getInstance().world;
         if (world == null) return;
         Entity p = world.getEntityByID(message.data.getInteger("I"));
-        if (p != null && p instanceof EntityLivingBase)
+        if (p != null && p instanceof LivingEntity)
         {
-            PlayerWearables cap = ThutWearables.getWearables((EntityLivingBase) p);
+            PlayerWearables cap = ThutWearables.getWearables((LivingEntity) p);
             cap.readFromNBT(message.data);
         }
         return;

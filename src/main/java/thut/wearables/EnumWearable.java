@@ -4,10 +4,10 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.Hand;
 
 public enum EnumWearable
 {
@@ -48,7 +48,7 @@ public enum EnumWearable
             }
 
             @Override
-            public void onPutOn(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex)
+            public void onPutOn(LivingEntity player, ItemStack itemstack, EnumWearable slot, int subIndex)
             {
                 if (itemstack == null) return;
                 IActiveWearable wearable;
@@ -62,7 +62,7 @@ public enum EnumWearable
             }
 
             @Override
-            public void onTakeOff(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex)
+            public void onTakeOff(LivingEntity player, ItemStack itemstack, EnumWearable slot, int subIndex)
             {
                 if (itemstack == null) return;
                 IActiveWearable wearable;
@@ -76,7 +76,7 @@ public enum EnumWearable
             }
 
             @Override
-            public void onUpdate(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex)
+            public void onUpdate(LivingEntity player, ItemStack itemstack, EnumWearable slot, int subIndex)
             {
                 if (itemstack == null) return;
                 IActiveWearable wearable;
@@ -86,23 +86,23 @@ public enum EnumWearable
                 }
                 if (itemstack.getItem() instanceof IActiveWearable)
                     ((IActiveWearable) itemstack.getItem()).onUpdate(player, itemstack, slot, subIndex);
-                else if (player instanceof EntityPlayer)
-                    itemstack.getItem().onArmorTick(player.getEntityWorld(), (EntityPlayer) player, itemstack);
+                else if (player instanceof PlayerEntity)
+                    itemstack.getItem().onArmorTick(player.getEntityWorld(), (PlayerEntity) player, itemstack);
                 else itemstack.getItem().onUpdate(itemstack, player.getEntityWorld(), player, slot.index + subIndex,
                         false);
             }
 
             @Override
-            public void onInteract(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex)
+            public void onInteract(LivingEntity player, ItemStack itemstack, EnumWearable slot, int subIndex)
             {
-                if (itemstack != null && player instanceof EntityPlayer)
+                if (itemstack != null && player instanceof PlayerEntity)
                 {
-                    CompatWrapper.rightClickWith(itemstack, (EntityPlayer) player, EnumHand.MAIN_HAND);
+                    CompatWrapper.rightClickWith(itemstack, (PlayerEntity) player, Hand.MAIN_HAND);
                 }
             }
 
             @Override
-            public boolean canRemove(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex)
+            public boolean canRemove(LivingEntity player, ItemStack itemstack, EnumWearable slot, int subIndex)
             {
                 if (itemstack == null) return true;
                 IActiveWearable wearable;
@@ -193,7 +193,7 @@ public enum EnumWearable
         return null;
     }
 
-    public static void interact(EntityPlayer player, ItemStack item, int index)
+    public static void interact(PlayerEntity player, ItemStack item, int index)
     {
         if (item == null) return;
         EnumWearable slot = getWearable(index);
@@ -204,7 +204,7 @@ public enum EnumWearable
         }
     }
 
-    public static void putOn(EntityLivingBase wearer, ItemStack stack, int index)
+    public static void putOn(LivingEntity wearer, ItemStack stack, int index)
     {
         if (stack == null) return;
         EnumWearable slot = getWearable(index);
@@ -215,7 +215,7 @@ public enum EnumWearable
         }
     }
 
-    public static void takeOff(EntityLivingBase wearer, ItemStack stack, int index)
+    public static void takeOff(LivingEntity wearer, ItemStack stack, int index)
     {
         if (stack == null) return;
         EnumWearable slot = getWearable(index);
@@ -226,7 +226,7 @@ public enum EnumWearable
         }
     }
 
-    public static void tick(EntityLivingBase wearer, ItemStack stack, int index)
+    public static void tick(LivingEntity wearer, ItemStack stack, int index)
     {
         if (stack == null) return;
         EnumWearable slot = getWearable(index);
@@ -237,7 +237,7 @@ public enum EnumWearable
         }
     }
 
-    public static boolean canTakeOff(EntityLivingBase wearer, ItemStack stack, int index)
+    public static boolean canTakeOff(LivingEntity wearer, ItemStack stack, int index)
     {
         if (stack == null) return true;
         EnumWearable slot = getWearable(index);

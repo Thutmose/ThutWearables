@@ -13,17 +13,17 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderLivingBase;
 import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.init.MobEffects;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.scoreboard.ScoreCriteria.RenderType;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.items.IItemHandler;
 import thut.wearables.CompatClass;
 import thut.wearables.CompatClass.Phase;
@@ -35,7 +35,7 @@ import vazkii.botania.api.item.IPhantomInkable;
 public class Compat
 {
     @CompatClass(phase = Phase.INIT)
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @Optional.Method(modid = "botania")
     public static void init()
     {
@@ -67,11 +67,11 @@ public class Compat
      * File Created @ [Aug 27, 2014, 8:55:00 PM (GMT)]
      * 
      * */
-    @SideOnly(Side.CLIENT)
-    public static class BotaniaRenderHandler implements LayerRenderer<EntityPlayer>
+    @OnlyIn(Dist.CLIENT)
+    public static class BotaniaRenderHandler implements LayerRenderer<PlayerEntity>
     {
         @Override
-        public void doRenderLayer(@Nonnull EntityPlayer player, float limbSwing, float limbSwingAmount,
+        public void doRenderLayer(@Nonnull PlayerEntity player, float limbSwing, float limbSwingAmount,
                 float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, float scale)
         {
             if (player.getActivePotionEffect(MobEffects.INVISIBILITY) != null) return;
@@ -95,7 +95,7 @@ public class Compat
             GlStateManager.popMatrix();
         }
 
-        private void dispatchRenders(IItemHandler inv, EntityPlayer player, RenderType type, float partialTicks)
+        private void dispatchRenders(IItemHandler inv, PlayerEntity player, RenderType type, float partialTicks)
         {
             for (int i = 0; i < inv.getSlots(); i++)
             {

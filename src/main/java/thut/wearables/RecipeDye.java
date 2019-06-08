@@ -7,7 +7,7 @@ import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
@@ -88,7 +88,7 @@ public class RecipeDye implements IRecipe
         if (dye)
         {
             output = worn.copy();
-            if (!output.hasTagCompound()) output.setTagCompound(new NBTTagCompound());
+            if (!output.hasTag()) output.setTag(new CompoundNBT());
             int[] ids = OreDictionary.getOreIDs(dyeStack);
             int colour = dyeStack.getItemDamage();
             for (int i : ids)
@@ -109,7 +109,7 @@ public class RecipeDye implements IRecipe
                     }
                 }
             }
-            output.getTagCompound().setInteger("dyeColour", colour);
+            output.getTag().setInteger("dyeColour", colour);
         }
         else
         {

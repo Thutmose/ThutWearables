@@ -4,14 +4,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraft.world.storage.ISaveHandler;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.api.distmarker.Dist;
 
 public class WearableHandler
 {
@@ -25,7 +25,7 @@ public class WearableHandler
 
     public static PlayerWearables load(String uuid)
     {
-        if (FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER)
+        if (FMLCommonHandler.instance().getEffectiveSide() == Dist.DEDICATED_SERVER)
         {
             PlayerWearables wearables = new PlayerWearables();
             String fileName = wearables.dataFileName();
@@ -43,9 +43,9 @@ public class WearableHandler
                 try
                 {
                     FileInputStream fileinputstream = new FileInputStream(file);
-                    NBTTagCompound nbttagcompound = CompressedStreamTools.readCompressed(fileinputstream);
+                    CompoundNBT CompoundNBT = CompressedStreamTools.readCompressed(fileinputstream);
                     fileinputstream.close();
-                    wearables.readFromNBT(nbttagcompound.getCompoundTag("Data"));
+                    wearables.readFromNBT(CompoundNBT.getCompound("Data"));
                     // Cleanup the file, we don't need tihs anymore.
                     file.delete();
                     File dir = new File(file.getParentFile().getAbsolutePath());

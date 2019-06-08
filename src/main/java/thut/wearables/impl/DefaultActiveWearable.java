@@ -1,6 +1,6 @@
 package thut.wearables.impl;
 
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import thut.wearables.EnumWearable;
 import thut.wearables.IActiveWearable;
@@ -13,7 +13,7 @@ public class DefaultActiveWearable implements IActiveWearable
     }
 
     @Override
-    public void renderWearable(EnumWearable slot, EntityLivingBase wearer, ItemStack stack, float partialTicks)
+    public void renderWearable(EnumWearable slot, LivingEntity wearer, ItemStack stack, float partialTicks)
     {
     }
 
@@ -24,17 +24,17 @@ public class DefaultActiveWearable implements IActiveWearable
     }
 
     @Override
-    public void onUpdate(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex)
+    public void onUpdate(LivingEntity player, ItemStack itemstack, EnumWearable slot, int subIndex)
     {
     }
 
     @Override
-    public void onTakeOff(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex)
+    public void onTakeOff(LivingEntity player, ItemStack itemstack, EnumWearable slot, int subIndex)
     {
     }
 
     @Override
-    public void onPutOn(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex)
+    public void onPutOn(LivingEntity player, ItemStack itemstack, EnumWearable slot, int subIndex)
     {
     }
 

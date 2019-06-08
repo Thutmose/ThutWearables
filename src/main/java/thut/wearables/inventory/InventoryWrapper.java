@@ -1,10 +1,10 @@
 package thut.wearables.inventory;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TranslationTextComponent;
 import thut.wearables.EnumWearable;
 
 public class InventoryWrapper implements IInventory
@@ -31,7 +31,7 @@ public class InventoryWrapper implements IInventory
     @Override
     public ITextComponent getDisplayName()
     {
-        return new TextComponentTranslation("pokecube.wearables");
+        return new TranslationTextComponent("pokecube.wearables");
     }
 
     @Override
@@ -70,18 +70,18 @@ public class InventoryWrapper implements IInventory
     }
 
     @Override
-    public boolean isUsableByPlayer(EntityPlayer player)
+    public boolean isUsableByPlayer(PlayerEntity player)
     {
         return true;
     }
 
     @Override
-    public void openInventory(EntityPlayer player)
+    public void openInventory(PlayerEntity player)
     {
     }
 
     @Override
-    public void closeInventory(EntityPlayer player)
+    public void closeInventory(PlayerEntity player)
     {
     }
 

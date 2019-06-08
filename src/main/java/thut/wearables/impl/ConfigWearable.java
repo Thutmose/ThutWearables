@@ -4,10 +4,10 @@ import com.mojang.blaze3d.platform.GlStateManager;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.model.ItemCameraTransforms.TransformType;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import thut.wearables.EnumWearable;
@@ -25,29 +25,29 @@ public class ConfigWearable implements IActiveWearable, ICapabilityProvider
     @Override
     public EnumWearable getSlot(ItemStack stack)
     {
-        if (slot == null && stack.hasTagCompound() && stack.getTagCompound().hasKey("wslot"))
+        if (slot == null && stack.hasTag() && stack.getTag().hasKey("wslot"))
         {
-            slot = EnumWearable.valueOf(stack.getTagCompound().getString("wslot"));
+            slot = EnumWearable.valueOf(stack.getTag().getString("wslot"));
         }
         return slot;
     }
 
     @Override
-    public void renderWearable(EnumWearable slot, EntityLivingBase wearer, ItemStack stack, float partialTicks)
+    public void renderWearable(EnumWearable slot, LivingEntity wearer, ItemStack stack, float partialTicks)
     {
         // TODO way to register renderers for config wearables
 
         // This is for items that should just be directly rendered
-        if (stack.hasTagCompound() && stack.getTagCompound().hasKey("wslot"))
+        if (stack.hasTag() && stack.getTag().hasKey("wslot"))
         {
 
             GlStateManager.pushMatrix();
 
             GlStateManager.rotate(180, 0, 0, 1);
 
-            if (stack.getTagCompound().hasKey("winfo"))
+            if (stack.getTag().hasKey("winfo"))
             {
-                NBTTagCompound info = stack.getTagCompound().getCompoundTag("winfo");
+                CompoundNBT info = stack.getTag().getCompound("winfo");
                 if (info.hasKey("scale"))
                 {
                     float scale = info.getFloat("scale");
@@ -87,20 +87,20 @@ public class ConfigWearable implements IActiveWearable, ICapabilityProvider
             }
 
             GlStateManager.translate(-0.25, 0, 0);
-            Minecraft.getMinecraft().getItemRenderer().renderItem(wearer, stack, TransformType.NONE);
+            Minecraft.getInstance().getItemRenderer().renderItem(wearer, stack, TransformType.NONE);
             GlStateManager.popMatrix();
         }
 
     }
 
     @Override
-    public boolean hasCapability(Capability<?> capability, EnumFacing facing)
+    public boolean hasCapability(Capability<?> capability, Direction facing)
     {
         return capability == WEARABLE_CAP;
     }
 
     @Override
-    public <T> T getCapability(Capability<T> capability, EnumFacing facing)
+    public <T> T getCapability(Capability<T> capability, Direction facing)
     {
         return hasCapability(capability, facing) ? IActiveWearable.WEARABLE_CAP.cast(this) : null;
     }

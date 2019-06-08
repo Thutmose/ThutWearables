@@ -4,8 +4,8 @@ import com.mojang.blaze3d.platform.GlStateManager;
 
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.renderer.InventoryEffectRenderer;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import thut.wearables.ThutWearables;
 import thut.wearables.inventory.ContainerWearables;
@@ -19,14 +19,14 @@ public class GuiWearables extends InventoryEffectRenderer
     private float                        oldMouseX;
     /** The old y position of the mouse pointer */
     private float                        oldMouseY;
-    private final EntityLivingBase       toRender;
+    private final LivingEntity       toRender;
 
-    public GuiWearables(EntityPlayer player)
+    public GuiWearables(PlayerEntity player)
     {
         this(player, player);
     }
 
-    public GuiWearables(EntityLivingBase wearer, EntityPlayer player)
+    public GuiWearables(LivingEntity wearer, PlayerEntity player)
     {
         super(new ContainerWearables(wearer, player));
         this.toRender = wearer;

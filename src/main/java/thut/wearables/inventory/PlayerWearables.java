@@ -8,9 +8,9 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
+import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.items.IItemHandlerModifiable;
@@ -18,7 +18,7 @@ import thut.wearables.CompatWrapper;
 import thut.wearables.EnumWearable;
 
 public class PlayerWearables
-        implements IWearableInventory, IItemHandlerModifiable, ICapabilitySerializable<NBTTagCompound>
+        implements IWearableInventory, IItemHandlerModifiable, ICapabilitySerializable<CompoundNBT>
 {
     private static class WearableSlot
     {
@@ -71,16 +71,16 @@ public class PlayerWearables
             return false;
         }
 
-        NBTTagCompound saveToNBT()
+        CompoundNBT saveToNBT()
         {
-            NBTTagCompound tag = new NBTTagCompound();
+            CompoundNBT tag = new CompoundNBT();
             tag.setByte("type", (byte) type.ordinal());
             for (int n = 0; n < slots.size(); n++)
             {
                 ItemStack i = getStack(n);
                 if (CompatWrapper.isValid(i))
                 {
-                    NBTTagCompound tag1 = new NBTTagCompound();
+                    CompoundNBT tag1 = new CompoundNBT();
                     i.writeToNBT(tag1);
                     tag.setTag("slot" + n, tag1);
                 }
@@ -88,14 +88,14 @@ public class PlayerWearables
             return tag;
         }
 
-        void loadFromNBT(NBTTagCompound tag)
+        void loadFromNBT(CompoundNBT tag)
         {
             for (int n = 0; n < slots.size(); n++)
             {
-                NBTBase temp = tag.getTag("slot" + n);
-                if (temp instanceof NBTTagCompound)
+                INBT temp = tag.getTag("slot" + n);
+                if (temp instanceof CompoundNBT)
                 {
-                    NBTTagCompound tag1 = (NBTTagCompound) temp;
+                    CompoundNBT tag1 = (CompoundNBT) temp;
                     setStack(n, new ItemStack(tag1));
                 }
             }
@@ -180,23 +180,23 @@ public class PlayerWearables
         return "wearables";
     }
 
-    public NBTTagCompound writeToNBT(NBTTagCompound tag)
+    public CompoundNBT writeToNBT(CompoundNBT tag)
     {
         for (EnumWearable slot : slots.keySet())
         {
-            NBTTagCompound compound = slots.get(slot).saveToNBT();
+            CompoundNBT compound = slots.get(slot).saveToNBT();
             tag.setTag(slot.ordinal() + "", compound);
         }
         return tag;
     }
 
-    public void readFromNBT(NBTTagCompound tag)
+    public void readFromNBT(CompoundNBT tag)
     {
         for (EnumWearable type : EnumWearable.values())
             slots.put(type, new WearableSlot(type));
         for (EnumWearable slot : slots.keySet())
         {
-            NBTTagCompound compound = tag.getCompoundTag(slot.ordinal() + "");
+            CompoundNBT compound = tag.getCompound(slot.ordinal() + "");
             slots.get(slot).loadFromNBT(compound);
         }
     }
@@ -243,26 +243,26 @@ public class PlayerWearables
     }
 
     @Override
-    public boolean hasCapability(Capability<?> capability, EnumFacing facing)
+    public boolean hasCapability(Capability<?> capability, Direction facing)
     {
         return WearableHandler.WEARABLES_CAP.equals(capability);
     }
 
     @Override
-    public <T> T getCapability(Capability<T> capability, EnumFacing facing)
+    public <T> T getCapability(Capability<T> capability, Direction facing)
     {
         if (hasCapability(capability, facing)) return WearableHandler.WEARABLES_CAP.cast(this);
         return null;
     }
 
     @Override
-    public NBTTagCompound serializeNBT()
+    public CompoundNBT serializeNBT()
     {
-        return writeToNBT(new NBTTagCompound());
+        return writeToNBT(new CompoundNBT());
     }
 
     @Override
-    public void deserializeNBT(NBTTagCompound nbt)
+    public void deserializeNBT(CompoundNBT nbt)
     {
         readFromNBT(nbt);
     }

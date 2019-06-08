@@ -4,20 +4,20 @@ import baubles.api.BaubleType;
 import baubles.api.IBauble;
 import baubles.api.cap.BaublesCapabilities;
 import baubles.api.render.IRenderBauble;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.scoreboard.ScoreCriteria.RenderType;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import thut.wearables.CompatClass;
 import thut.wearables.CompatClass.Phase;
 import thut.wearables.EnumWearable;
@@ -53,7 +53,7 @@ public class Compat
             return render != null;
         }
 
-        public void doRender(ItemStack arg0, EntityPlayer arg1, RenderType arg2, float arg3)
+        public void doRender(ItemStack arg0, PlayerEntity arg1, RenderType arg2, float arg3)
         {
             render.onPlayerBaubleRender(arg0, arg1, arg2, arg3);
         }
@@ -119,13 +119,13 @@ public class Compat
         }
 
         @Override
-        public boolean hasCapability(Capability<?> capability, EnumFacing facing)
+        public boolean hasCapability(Capability<?> capability, Direction facing)
         {
             return capability == BaublesCapabilities.CAPABILITY_ITEM_BAUBLE;
         }
 
         @Override
-        public <T> T getCapability(Capability<T> capability, EnumFacing facing)
+        public <T> T getCapability(Capability<T> capability, Direction facing)
         {
             return hasCapability(capability, facing) ? BaublesCapabilities.CAPABILITY_ITEM_BAUBLE.cast(this) : null;
         }
@@ -162,7 +162,7 @@ public class Compat
         @Override
         /** This method is called once per tick if the bauble is being worn by a
          * player */
-        public void onWornTick(ItemStack itemstack, EntityLivingBase player)
+        public void onWornTick(ItemStack itemstack, LivingEntity player)
         {
             if (active != null)
             {
@@ -173,7 +173,7 @@ public class Compat
 
         @Override
         /** This method is called when the bauble is equipped by a player */
-        public void onEquipped(ItemStack itemstack, EntityLivingBase player)
+        public void onEquipped(ItemStack itemstack, LivingEntity player)
         {
             if (active != null)
             {
@@ -184,7 +184,7 @@ public class Compat
 
         @Override
         /** This method is called when the bauble is unequipped by a player */
-        public void onUnequipped(ItemStack itemstack, EntityLivingBase player)
+        public void onUnequipped(ItemStack itemstack, LivingEntity player)
         {
             if (active != null)
             {
@@ -195,21 +195,21 @@ public class Compat
 
         @Override
         /** can this bauble be placed in a bauble slot */
-        public boolean canEquip(ItemStack itemstack, EntityLivingBase player)
+        public boolean canEquip(ItemStack itemstack, LivingEntity player)
         {
             return wrapped.canPutOn(player, itemstack, wrapped.getSlot(itemstack), 0);
         }
 
         @Override
         /** Can this bauble be removed from a bauble slot */
-        public boolean canUnequip(ItemStack itemstack, EntityLivingBase player)
+        public boolean canUnequip(ItemStack itemstack, LivingEntity player)
         {
             // TODO maybe find the index?
             return wrapped.canRemove(player, itemstack, wrapped.getSlot(itemstack), 0);
         }
 
         @Override
-        public void onPlayerBaubleRender(ItemStack arg0, EntityPlayer arg1, RenderType arg2, float arg3)
+        public void onPlayerBaubleRender(ItemStack arg0, PlayerEntity arg1, RenderType arg2, float arg3)
         {
             wrapped.renderWearable(wrapped.getSlot(arg0), arg1, arg0, arg3);
         }
@@ -251,21 +251,21 @@ public class Compat
             return null;
         }
 
-        @SideOnly(Side.CLIENT)
+        @OnlyIn(Dist.CLIENT)
         @Override
         public boolean customOffsets()
         {
             return true;
         }
 
-        @SideOnly(Side.CLIENT)
+        @OnlyIn(Dist.CLIENT)
         @Override
-        public void renderWearable(EnumWearable slot, EntityLivingBase wearer, ItemStack stack, float partialTicks)
+        public void renderWearable(EnumWearable slot, LivingEntity wearer, ItemStack stack, float partialTicks)
         {
-            if (render.canRender() && wearer instanceof EntityPlayer)
+            if (render.canRender() && wearer instanceof PlayerEntity)
             {
                 RenderType type = null;
-                EntityPlayer player = (EntityPlayer) wearer;
+                PlayerEntity player = (PlayerEntity) wearer;
                 switch (slot)
                 {
                 case HAT:
@@ -296,33 +296,33 @@ public class Compat
         }
 
         @Override
-        public boolean hasCapability(Capability<?> capability, EnumFacing facing)
+        public boolean hasCapability(Capability<?> capability, Direction facing)
         {
             return capability == IActiveWearable.WEARABLE_CAP;
         }
 
         @Override
-        public <T> T getCapability(Capability<T> capability, EnumFacing facing)
+        public <T> T getCapability(Capability<T> capability, Direction facing)
         {
             return hasCapability(capability, facing) ? IActiveWearable.WEARABLE_CAP.cast(this) : null;
         }
 
         @Override
-        public void onPutOn(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex)
+        public void onPutOn(LivingEntity player, ItemStack itemstack, EnumWearable slot, int subIndex)
         {
             System.out.println(wrapped + " put on");
             wrapped.onEquipped(itemstack, player);
         }
 
         @Override
-        public void onTakeOff(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex)
+        public void onTakeOff(LivingEntity player, ItemStack itemstack, EnumWearable slot, int subIndex)
         {
             System.out.println(wrapped + " taken off");
             wrapped.onUnequipped(itemstack, player);
         }
 
         @Override
-        public void onUpdate(EntityLivingBase player, ItemStack itemstack, EnumWearable slot, int subIndex)
+        public void onUpdate(LivingEntity player, ItemStack itemstack, EnumWearable slot, int subIndex)
         {
             wrapped.onWornTick(itemstack, player);
         }

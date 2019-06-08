@@ -5,9 +5,9 @@ import java.io.IOException;
 import javax.xml.ws.handler.MessageContext;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -17,11 +17,11 @@ import thut.wearables.ThutWearables;
 
 public class PacketGui implements IMessage, IMessageHandler<PacketGui, IMessage>
 {
-    public NBTTagCompound data;
+    public CompoundNBT data;
 
     public PacketGui()
     {
-        data = new NBTTagCompound();
+        data = new CompoundNBT();
     }
 
     @Override
@@ -59,7 +59,7 @@ public class PacketGui implements IMessage, IMessageHandler<PacketGui, IMessage>
         return null;
     }
 
-    static void processMessage(EntityPlayerMP player, PacketGui message)
+    static void processMessage(ServerPlayerEntity player, PacketGui message)
     {
         if (message.data.hasNoTags())
         {

@@ -9,7 +9,7 @@ import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.renderer.entity.RenderLivingBase;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
 import net.minecraft.client.renderer.model.ModelBox;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.init.MobEffects;
 import net.minecraft.item.ItemStack;
 import thut.wearables.EnumWearable;
@@ -18,7 +18,7 @@ import thut.wearables.IWearable;
 import thut.wearables.ThutWearables;
 import thut.wearables.inventory.PlayerWearables;
 
-public class WearablesRenderer implements LayerRenderer<EntityLivingBase>
+public class WearablesRenderer implements LayerRenderer<LivingEntity>
 {
     float[]                           offsetArr = { 0, 0, 0 };
 
@@ -36,7 +36,7 @@ public class WearablesRenderer implements LayerRenderer<EntityLivingBase>
     }
 
     @Override
-    public void doRenderLayer(EntityLivingBase wearer, float f, float f1, float partialTicks, float f3, float f4,
+    public void doRenderLayer(LivingEntity wearer, float f, float f1, float partialTicks, float f3, float f4,
             float f5, float scale)
     {
         // No Render invisible.
