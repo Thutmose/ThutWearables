@@ -1,7 +1,8 @@
 package thut.wearables.client.gui;
 
+import com.mojang.blaze3d.platform.GlStateManager;
+
 import net.minecraft.client.gui.inventory.GuiInventory;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.InventoryEffectRenderer;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
