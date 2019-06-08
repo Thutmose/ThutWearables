@@ -31,7 +31,7 @@ public class PacketSyncWearables implements IMessage, IMessageHandler<PacketSync
         this();
         data.setInteger("I", player.getEntityId());
         PlayerWearables cap = ThutWearables.getWearables(player);
-        cap.writeToNBT(data);
+        if (cap != null) cap.writeToNBT(data);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class PacketSyncWearables implements IMessage, IMessageHandler<PacketSync
         if (p != null && p instanceof EntityLivingBase)
         {
             PlayerWearables cap = ThutWearables.getWearables((EntityLivingBase) p);
-            cap.readFromNBT(message.data);
+            if (cap != null) cap.readFromNBT(message.data);
         }
         return;
     }
