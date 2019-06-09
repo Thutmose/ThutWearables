@@ -74,7 +74,7 @@ public class PacketSyncWearables implements IMessage, IMessageHandler<PacketSync
     {
         World world = Minecraft.getInstance().world;
         if (world == null) return;
-        Entity p = world.getEntityByID(message.data.getInteger("I"));
+        Entity p = world.getEntityByID(message.data.getInt("I"));
         if (p != null && p instanceof LivingEntity)
         {
             PlayerWearables cap = ThutWearables.getWearables((LivingEntity) p);

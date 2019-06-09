@@ -68,7 +68,7 @@ public class PacketGui implements IMessage, IMessageHandler<PacketGui, IMessage>
         }
         if (message.data.hasKey("w_open_target_"))
         {
-            player.openGui(ThutWearables.instance, message.data.getInteger("w_open_target_"), player.getEntityWorld(),
+            player.openGui(ThutWearables.instance, message.data.getInt("w_open_target_"), player.getEntityWorld(),
                     0, 0, 0);
             return;
         }
