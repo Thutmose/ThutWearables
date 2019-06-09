@@ -74,7 +74,7 @@ public class Compat
         public void doRenderLayer(@Nonnull PlayerEntity player, float limbSwing, float limbSwingAmount,
                 float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, float scale)
         {
-            if (player.getActivePotionEffect(MobEffects.INVISIBILITY) != null) return;
+            if (player.getActiveEffectInstance(MobEffects.INVISIBILITY) != null) return;
 
             IItemHandler inv = ThutWearables.getWearables(player);
 

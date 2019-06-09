@@ -30,7 +30,7 @@ public class PacketSyncWearables implements IMessage, IMessageHandler<PacketSync
     public PacketSyncWearables(LivingEntity player)
     {
         this();
-        data.setInteger("I", player.getEntityId());
+        data.putInt("I", player.getEntityId());
         PlayerWearables cap = ThutWearables.getWearables(player);
         cap.writeToNBT(data);
     }

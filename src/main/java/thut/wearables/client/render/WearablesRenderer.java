@@ -40,7 +40,7 @@ public class WearablesRenderer implements LayerRenderer<LivingEntity>
             float f5, float scale)
     {
         // No Render invisible.
-        if (wearer.getActivePotionEffect(MobEffects.INVISIBILITY) != null) return;
+        if (wearer.getActiveEffectInstance(MobEffects.INVISIBILITY) != null) return;
         // Only applies to bipeds, anyone else needs to write their own render
         // layer.
         if (!(this.livingEntityRenderer.getMainModel() instanceof ModelBiped)) return;

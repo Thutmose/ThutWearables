@@ -109,7 +109,7 @@ public class RecipeDye implements IRecipe
                     }
                 }
             }
-            output.getTag().setInteger("dyeColour", colour);
+            output.getTag().putInt("dyeColour", colour);
         }
         else
         {

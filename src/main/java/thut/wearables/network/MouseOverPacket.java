@@ -40,7 +40,7 @@ public class MouseOverPacket implements IMessage
                 {
                     int id = pos.entityHit.getEntityId();
                     PacketGui packet = new PacketGui();
-                    packet.data.setInteger("w_open_target_", id);
+                    packet.data.putInt("w_open_target_", id);
                     return packet;
                 }
                 else
