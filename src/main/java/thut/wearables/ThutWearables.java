@@ -9,52 +9,47 @@ import java.util.UUID;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.gui.ScreenManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.item.crafting.IRecipeSerializer;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.GameRules;
-import net.minecraft.world.World;
+import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
-import net.minecraftforge.event.entity.player.PlayerDropsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.client.event.ConfigChangedEvent;
-import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.Mod.Instance;
-import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
-import net.minecraftforge.fml.common.network.IGuiHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import net.minecraftforge.fml.common.thread.EffectiveSide;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
-import net.minecraftforge.fml.network.NetworkRegistry;
-import net.minecraftforge.registries.GameData;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import thut.wearables.CompatClass.Phase;
 import thut.wearables.client.gui.GuiEvents;
 import thut.wearables.client.gui.GuiWearables;
@@ -66,86 +61,171 @@ import thut.wearables.inventory.PlayerWearables;
 import thut.wearables.inventory.WearableHandler;
 import thut.wearables.network.MouseOverPacket;
 import thut.wearables.network.PacketGui;
+import thut.wearables.network.PacketHandler;
 import thut.wearables.network.PacketSyncWearables;
 
 @Mod(ThutWearables.MODID)
 public class ThutWearables
 {
-    public static final String MODID     = Reference.MODID;
-    public static final String VERSION   = Reference.VERSION;
-    public static final String CONFIGGUI = "thut.wearables.client.gui.ModGuiFactory";
-
-    public static PlayerWearables getWearables(LivingEntity wearer)
+    @OnlyIn(value = Dist.CLIENT)
+    public static class ClientProxy extends CommonProxy
     {
-        PlayerWearables wearables = null;
-        if (wearer instanceof PlayerEntity) wearables = WearableHandler.getPlayerData(wearer.getCachedUniqueIdString());
-        if (wearer.hasCapability(WearableHandler.WEARABLES_CAP, null))
+        @Override
+        public boolean isClientSide()
         {
-            IWearableInventory inven = wearer.getCapability(WearableHandler.WEARABLES_CAP, null);
-            if (inven instanceof PlayerWearables)
+            return EffectiveSide.get() == LogicalSide.CLIENT;
+        }
+
+        @Override
+        public boolean isServerSide()
+        {
+            return EffectiveSide.get() == LogicalSide.SERVER;
+        }
+
+        @Override
+        public void setup(final FMLCommonSetupEvent event)
+        {
+            super.setup(event);
+            GuiEvents.init();
+            MinecraftForge.EVENT_BUS.register(new WearableEventHandler());
+        }
+
+        @Override
+        public void setupClient(final FMLClientSetupEvent event)
+        {
+            ScreenManager.registerFactory(ContainerWearables.TYPE, (c, i, t) -> new GuiWearables(c, i));
+        }
+    }
+
+    public static class CommonProxy
+    {
+        public void finish(final FMLLoadCompleteEvent event)
+        {
+            ThutWearables.doPhase(Phase.FINALIZE, event);
+        }
+
+        public boolean isClientSide()
+        {
+            return false;
+        }
+
+        public boolean isServerSide()
+        {
+            return true;
+        }
+
+        public void setup(final FMLCommonSetupEvent event)
+        {
+            ThutWearables.doPhase(Phase.SETUP, event);
+            CapabilityManager.INSTANCE.register(IActiveWearable.class, new Capability.IStorage<IActiveWearable>()
             {
-                PlayerWearables ret = (PlayerWearables) inven;
-                if (wearables != null) ret.readFromNBT(wearables.writeToNBT(new CompoundNBT()));
-                return ret;
-            }
+                @Override
+                public void readNBT(final Capability<IActiveWearable> capability, final IActiveWearable instance,
+                        final Direction side, final INBT nbt)
+                {
+                }
+
+                @Override
+                public INBT writeNBT(final Capability<IActiveWearable> capability, final IActiveWearable instance,
+                        final Direction side)
+                {
+                    return null;
+                }
+            }, IActiveWearable.Default::new);
+            CapabilityManager.INSTANCE.register(IWearableInventory.class, new Capability.IStorage<IWearableInventory>()
+            {
+                @Override
+                public void readNBT(final Capability<IWearableInventory> capability, final IWearableInventory instance,
+                        final Direction side, final INBT nbt)
+                {
+                    if (instance instanceof PlayerWearables && nbt instanceof CompoundNBT) ((PlayerWearables) instance)
+                            .readFromNBT((CompoundNBT) nbt);
+                }
+
+                @Override
+                public INBT writeNBT(final Capability<IWearableInventory> capability, final IWearableInventory instance,
+                        final Direction side)
+                {
+                    if (instance instanceof PlayerWearables) return ((PlayerWearables) instance).writeToNBT(
+                            new CompoundNBT());
+                    return null;
+                }
+            }, PlayerWearables::new);
+
+            ThutWearables.packets.registerMessage(PacketSyncWearables.class, PacketSyncWearables::new);
+            ThutWearables.packets.registerMessage(MouseOverPacket.class, MouseOverPacket::new);
+            ThutWearables.packets.registerMessage(PacketGui.class, PacketGui::new);
         }
-        return wearables;
-    }
 
-    public static SimpleNetworkWrapper                    packetPipeline         = new SimpleNetworkWrapper(MODID);
-
-    @SidedProxy
-    public static CommonProxy                             proxy;
-    @Instance(value = MODID)
-    public static ThutWearables                           instance;
-
-    private boolean                                       overworldRules         = true;
-    Map<CompatClass.Phase, Set<java.lang.reflect.Method>> initMethods            = Maps.newHashMap();
-
-    Map<ResourceLocation, EnumWearable>                   configWearables        = Maps.newHashMap();
-
-    public static Map<Integer, float[]>                   renderOffsets          = Maps.newHashMap();
-    public static Map<Integer, float[]>                   renderOffsetsSneak     = Maps.newHashMap();
-    public static int[]                                   buttonPos              = { 26, 9 };
-    public static boolean                                 hasButton              = true;
-    public static Set<Integer>                            renderBlacklist        = Sets.newHashSet();
-    public static String                                  configPath;
-    public static Configuration                           config;
-    public static boolean                                 baublesCompat          = true;
-
-    /** Cache of wearables for players that die when keep inventory is on. */
-    Map<UUID, PlayerWearables>                            player_inventory_cache = Maps.newHashMap();
-    Set<UUID>                                             toKeep                 = Sets.newHashSet();
-
-    public ThutWearables()
-    {
-        for (Phase phase : Phase.values())
+        public void setupClient(final FMLClientSetupEvent event)
         {
-            initMethods.put(phase, new HashSet<java.lang.reflect.Method>());
+
         }
-        CompatParser.findClasses("thut.wearables.compat", initMethods);
-        doPhase(Phase.CONSTRUCT, null);
     }
 
-    @EventHandler
-    public void init(FMLInitializationEvent evt)
+    // You can use EventBusSubscriber to automatically subscribe events on the
+    // contained class (this is subscribing to the MOD
+    // Event bus for receiving Registry Events)
+    @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+    public static class RegistryEvents
     {
-        doPhase(Phase.INIT, evt);
-    }
-
-    @EventHandler
-    public void init(FMLPostInitializationEvent evt)
-    {
-        doPhase(Phase.POST, evt);
-    }
-
-    private void doPhase(Phase pre, Object event)
-    {
-        for (java.lang.reflect.Method m : initMethods.get(pre))
+        @SubscribeEvent
+        public static void registerContainers(final RegistryEvent.Register<ContainerType<?>> event)
         {
+            if (!ModLoadingContext.get().getActiveContainer().getModId().equals(ThutWearables.MODID)) return;
+            event.getRegistry().register(ContainerWearables.TYPE.setRegistryName(ThutWearables.MODID, "wearables"));
+        }
+
+        @SubscribeEvent
+        public static void registerRecipes(final RegistryEvent.Register<IRecipeSerializer<?>> event)
+        {
+            if (!ModLoadingContext.get().getActiveContainer().getModId().equals(ThutWearables.MODID)) return;
+            event.getRegistry().register(RecipeDye.SERIALIZER);
+        }
+
+        @OnlyIn(Dist.CLIENT)
+        @SubscribeEvent
+        public static void textureStitch(final TextureStitchEvent.Pre event)
+        {
+            if (!event.getMap().getBasePath().equals("textures")) return;
+            System.out.println("Texture Stitch " + event.getMap().getBasePath());
+            for (int i = 0; i < EnumWearable.BYINDEX.length; i++)
+                event.addSprite(new ResourceLocation(EnumWearable.getIcon(i)));
+        }
+    }
+
+    @CapabilityInject(IActiveWearable.class)
+    public static final Capability<IActiveWearable>    WEARABLE_CAP  = null;
+    @CapabilityInject(IWearableInventory.class)
+    public static final Capability<IWearableInventory> WEARABLES_CAP = null;
+
+    public static final String MODID = Reference.MODID;
+
+    public final static PacketHandler packets = new PacketHandler(new ResourceLocation(Reference.MODID, "comms"),
+            Reference.NETVERSION);
+
+    public final static CommonProxy proxy = DistExecutor.runForDist(() -> () -> new ClientProxy(),
+            () -> () -> new CommonProxy());
+
+    public static ThutWearables instance;
+
+    public static Map<Integer, float[]> renderOffsets = Maps.newHashMap();
+
+    public static Map<Integer, float[]> renderOffsetsSneak = Maps.newHashMap();
+    public static int[]                 buttonPos          = { 26, 9 };
+    public static boolean               hasButton          = true;
+    public static Set<Integer>          renderBlacklist    = Sets.newHashSet();
+    public static String                configPath;
+    public static boolean               baublesCompat      = false;
+
+    static Map<CompatClass.Phase, Set<java.lang.reflect.Method>> initMethods = Maps.newHashMap();
+
+    private static void doPhase(final Phase pre, final Object event)
+    {
+        for (final java.lang.reflect.Method m : ThutWearables.initMethods.get(pre))
             try
             {
-                CompatClass comp = m.getAnnotation(CompatClass.class);
+                final CompatClass comp = m.getAnnotation(CompatClass.class);
                 if (comp.takesEvent()) m.invoke(null, event);
                 else m.invoke(null);
             }
@@ -153,376 +233,196 @@ public class ThutWearables
             {
                 e.printStackTrace();
             }
-        }
     }
 
-    private void handleConfig(boolean load)
+    public static PlayerWearables getWearables(final LivingEntity wearer)
     {
-        if (load) config.load();
-        renderOffsets.clear();
-        renderBlacklist.clear();
-        renderOffsetsSneak.clear();
-        overworldRules = config.getBoolean("overworldGamerules", "general", overworldRules,
-                "whether to use overworld gamerules for keep inventory");
-        baublesCompat = config.getBoolean("baublesCompat", "compat", baublesCompat,
-                "Should thutwearables attempt to make baubles wearables.");
-        String[] otherWearables = config.getStringList("customWearables", "general",
-                new String[] { "wearablebackpacks:backpack>BACK" }, "Other mod's items that can be worn.");
-        for (String s : otherWearables)
+        PlayerWearables wearables = null;
+        if (wearer instanceof PlayerEntity) wearables = WearableHandler.getPlayerData(wearer.getCachedUniqueIdString());
+
+        final IWearableInventory inven = wearer.getCapability(WearableHandler.WEARABLES_CAP).orElse(wearables);
+        if (inven instanceof PlayerWearables)
         {
-            try
-            {
-                String[] args = s.split(">");
-                ResourceLocation resource = new ResourceLocation(args[0]);
-                EnumWearable slot = null;
-                try
-                {
-                    slot = EnumWearable.valueOf(args[1]);
-                }
-                catch (IllegalArgumentException e)
-                {
-                    // Ignore this, we put null in the map fine.
-                    System.out.println(resource
-                            + " has been added as a config wearable which requires an NBT tag to specify which slot it fits in.");
-                }
-                configWearables.put(resource, slot);
-            }
-            catch (Exception e1)
-            {
-                e1.printStackTrace();
-            }
-        }
-        buttonPos = config.get("general", "buttonPos", buttonPos, "Position of the button on the inventory screen.")
-                .getIntList();
-        hasButton = config.get("general", "hasButton", hasButton, "if false, there will be no button for gui.")
-                .getBoolean(true);
-        for (int i = 0; i < EnumWearable.BYINDEX.length; i++)
-        {
-            float[] offset = new float[3];
-            float[] offsetSneak = new float[3];
-            try
-            {
-                boolean blacklist = config.getBoolean("noRender_" + i, "client", false,
-                        "Do not render " + EnumWearable.BYINDEX[i].name());
-                if (blacklist) renderBlacklist.add(i);
-                String[] offsetArr = config
-                        .getString("offset_" + i, "client", "0,0,0", "Offset for " + EnumWearable.BYINDEX[i].name())
-                        .split(",");
-                offset[0] = Float.parseFloat(offsetArr[0]);
-                offset[1] = Float.parseFloat(offsetArr[1]);
-                offset[2] = Float.parseFloat(offsetArr[2]);
-                if (offset[0] == 0 && offset[1] == 0 && offset[2] == 0) offset = null;
-                if (i < 9)
-                {
-                    offsetArr = config.getString("offset_sneaking_" + i, "client", "0,0,0",
-                            "Offset for when sneaking for " + EnumWearable.BYINDEX[i].name()).split(",");
-                    offsetSneak[0] = Float.parseFloat(offsetArr[0]);
-                    offsetSneak[1] = Float.parseFloat(offsetArr[1]);
-                    offsetSneak[2] = Float.parseFloat(offsetArr[2]);
-                }
-                else if (i == 9)
-                {
-                    offsetArr = config.getString("offset_sneaking_" + i, "client", "0,0,0",
-                            "Offset for when sneaking for things on head").split(",");
-                    offsetSneak[0] = Float.parseFloat(offsetArr[0]);
-                    offsetSneak[1] = Float.parseFloat(offsetArr[1]);
-                    offsetSneak[2] = Float.parseFloat(offsetArr[2]);
-                }
-                if (offsetSneak[0] == 0 && offsetSneak[1] == 0 && offsetSneak[2] == 0) offsetSneak = null;
-            }
-            catch (Exception e1)
-            {
-                offset = null;
-                e1.printStackTrace();
-            }
-            if (FMLCommonHandler.instance().getSide() == Dist.CLIENT && offset != null) renderOffsets.put(i, offset);
-            if (FMLCommonHandler.instance().getSide() == Dist.CLIENT && offsetSneak != null)
-                renderOffsetsSneak.put(i, offsetSneak);
+            final PlayerWearables ret = (PlayerWearables) inven;
+            if (wearables != null) ret.readFromNBT(wearables.writeToNBT(new CompoundNBT()));
+            return ret;
         }
 
-        config.save();
+        return wearables;
     }
 
-    @EventHandler
-    public void preInit(FMLCommonSetupEvent e)
+    public static void syncWearables(final LivingEntity player)
     {
-        doPhase(Phase.PRE, e);
-        proxy.preInit(e);
-        config = new Configuration(e.getSuggestedConfigurationFile());
-        configPath = config.getConfigFile().getAbsolutePath();
-        handleConfig(true);
-        packetPipeline.registerMessage(PacketGui.class, PacketGui.class, 1, Dist.DEDICATED_SERVER);
-        packetPipeline.registerMessage(PacketSyncWearables.class, PacketSyncWearables.class, 2, Dist.CLIENT);
-        packetPipeline.registerMessage(MouseOverPacket.Handler.class, MouseOverPacket.class, 3, Dist.CLIENT);
-        MinecraftForge.EVENT_BUS.register(this);
-        NetworkRegistry.INSTANCE.registerGuiHandler(this, proxy);
-        CapabilityManager.INSTANCE.register(IActiveWearable.class, new Capability.IStorage<IActiveWearable>()
-        {
-            @Override
-            public INBT writeNBT(Capability<IActiveWearable> capability, IActiveWearable instance, Direction side)
-            {
-                return null;
-            }
-
-            @Override
-            public void readNBT(Capability<IActiveWearable> capability, IActiveWearable instance, Direction side,
-                    INBT nbt)
-            {
-            }
-        }, IActiveWearable.Default::new);
-        CapabilityManager.INSTANCE.register(IWearableInventory.class, new Capability.IStorage<IWearableInventory>()
-        {
-            @Override
-            public INBT writeNBT(Capability<IWearableInventory> capability, IWearableInventory instance,
-                    Direction side)
-            {
-                if (instance instanceof PlayerWearables)
-                    return ((PlayerWearables) instance).writeToNBT(new CompoundNBT());
-                return null;
-            }
-
-            @Override
-            public void readNBT(Capability<IWearableInventory> capability, IWearableInventory instance, Direction side,
-                    INBT nbt)
-            {
-                if (instance instanceof PlayerWearables && nbt instanceof CompoundNBT)
-                    ((PlayerWearables) instance).readFromNBT((CompoundNBT) nbt);
-            }
-        }, PlayerWearables::new);
-    }
-
-    @EventHandler
-    public void serverLoad(FMLServerStartingEvent event)
-    {
-        event.registerServerCommand(new CommandGui());
-    }
-
-    @SubscribeEvent
-    public void PlayerLoggedOutEvent(PlayerLoggedOutEvent event)
-    {
-        player_inventory_cache.remove(event.player.getUniqueID());
-    }
-
-    /** Syncs wearables to the player when they join a world. This fixes client
-     * issues when they use nether portals, etc
-     * 
-     * @param event */
-    @SubscribeEvent
-    public void joinWorld(EntityJoinWorldEvent event)
-    {
-        if (event.getWorld().isRemote) return;
-        if (event.getEntity() instanceof ServerPlayerEntity)
-        {
-            packetPipeline.sendTo(new PacketSyncWearables((LivingEntity) event.getEntity()),
-                    (ServerPlayerEntity) event.getEntity());
-        }
-    }
-
-    /** Syncs wearables of other mobs to player when they start tracking them.
-     * 
-     * @param event */
-    @SubscribeEvent
-    public void startTracking(StartTracking event)
-    {
-        if (event.getTarget() instanceof LivingEntity && event.getPlayerEntity().isServerWorld())
-        {
-            packetPipeline.sendTo(new PacketSyncWearables((LivingEntity) event.getTarget()),
-                    (ServerPlayerEntity) event.getPlayerEntity());
-        }
-    }
-
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void preDrop(LivingDeathEvent event)
-    {
-        if (!(event.getEntity() instanceof ServerPlayerEntity)) return;
-        PlayerEntity player = (PlayerEntity) event.getEntity();
-        GameRules rules = overworldRules ? player.getServer().getEntityWorld().getGameRules()
-                : player.getEntityWorld().getGameRules();
-        if (rules.getBoolean("keepInventory"))
-        {
-            PlayerWearables cap = ThutWearables.getWearables(player);
-            player_inventory_cache.put(player.getUniqueID(), cap);
-            toKeep.add(player.getUniqueID());
-            return;
-        }
-    }
-
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public void dropLoot(PlayerDropsEvent event)
-    {
-        PlayerEntity player = event.getPlayerEntity();
-        GameRules rules = overworldRules ? player.getServer().getWorld(0).getGameRules()
-                : player.getEntityWorld().getGameRules();
-        PlayerWearables cap = ThutWearables.getWearables(player);
-        if (rules.getBoolean("keepInventory")) return;
-
-        for (int i = 0; i < 13; i++)
-        {
-            ItemStack stack = cap.getStackInSlot(i);
-            if (stack != null)
-            {
-                EnumWearable.takeOff(player, stack, i);
-                double d0 = player.posY - 0.3D + player.getEyeHeight();
-                ItemEntity drop = new ItemEntity(player.getEntityWorld(), player.posX, d0, player.posZ, stack);
-                float f = player.getRNG().nextFloat() * 0.5F;
-                float f1 = player.getRNG().nextFloat() * ((float) Math.PI * 2F);
-                drop.motionX = -MathHelper.sin(f1) * f;
-                drop.motionZ = MathHelper.cos(f1) * f;
-                drop.motionY = 0.20000000298023224D;
-                event.getDrops().add(drop);
-                cap.setStackInSlot(i, ItemStack.EMPTY);
-            }
-        }
-        syncWearables(player);
-    }
-
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void respawn(PlayerRespawnEvent event)
-    {
-        PlayerEntity wearer = event.player;
-        if (wearer instanceof ServerPlayerEntity && (toKeep.contains(wearer.getUniqueID()) || event.isEndConquered()))
-        {
-            CompoundNBT tag = player_inventory_cache.get(wearer.getUniqueID()).serializeNBT();
-            PlayerWearables wearables = getWearables(wearer);
-            wearables.deserializeNBT(tag);
-            toKeep.remove(wearer.getUniqueID());
-            syncWearables(wearer);
-        }
-    }
-
-    @SubscribeEvent
-    public void playerTick(LivingUpdateEvent event)
-    {
-        if (event.getMobEntity().getEntityWorld().isRemote) return;
-        if (event.getEntity() instanceof PlayerEntity)
-        {
-            PlayerEntity wearer = (PlayerEntity) event.getEntity();
-            PlayerWearables wearables = getWearables(wearer);
-            for (int i = 0; i < 13; i++)
-            {
-                EnumWearable.tick(wearer, wearables.getStackInSlot(i), i);
-            }
-            if (wearer instanceof ServerPlayerEntity) player_inventory_cache.put(wearer.getUniqueID(), wearables);
-        }
-    }
-
-    @SubscribeEvent
-    public void onEntityCapabilityAttach(AttachCapabilitiesEvent<Entity> event)
-    {
-        if (event.getObject() instanceof LivingEntity)
-        {
-            event.addCapability(new ResourceLocation(MODID, "wearables"), new PlayerWearables());
-        }
-    }
-
-    @SubscribeEvent
-    public void onItemCapabilityAttach(AttachCapabilitiesEvent<ItemStack> event)
-    {
-        ResourceLocation loc = event.getObject().getItem().getRegistryName();
-        if (configWearables.containsKey(loc))
-        {
-            EnumWearable slot = configWearables.get(loc);
-            event.addCapability(new ResourceLocation(MODID, "configwearable"), new ConfigWearable(slot));
-        }
-    }
-
-    @SubscribeEvent
-    public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent eventArgs)
-    {
-        if (eventArgs.getModID().equals(Reference.MODID))
-        {
-            handleConfig(false);
-        }
-    }
-
-    @SubscribeEvent
-    public void initRecipes(RegistryEvent.Register<IRecipe> evt)
-    {
-        IRecipe recipe = new RecipeDye().setRegistryName(new ResourceLocation(MODID, "dye"));
-        GameData.register_impl(recipe);
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    @SubscribeEvent
-    public void textureStitch(TextureStitchEvent.Pre event)
-    {
-        String tex = null;
-        for (int i = 0; i < EnumWearable.BYINDEX.length; i++)
-        {
-            tex = EnumWearable.getIcon(i);
-            ResourceLocation location = new ResourceLocation(tex);
-            TextureAtlasSprite sprite = event.getMap().registerSprite(location);
-            sprite.setIconHeight(16);
-            sprite.setIconWidth(16);
-            sprite.initSprite(16, 16, 0, 0, false);
-        }
-    }
-
-    public static void syncWearables(LivingEntity player)
-    {
-        if (FMLCommonHandler.instance().getEffectiveSide() == Dist.CLIENT)
+        if (ThutWearables.proxy.isClientSide())
         {
             Thread.dumpStack();
             return;
         }
-        packetPipeline.sendToAllTracking(new PacketSyncWearables(player), player);
+        ThutWearables.packets.sendToTracking(new PacketSyncWearables(player), player);
     }
 
-    public static class CommonProxy implements IGuiHandler
+    private final boolean overworldRules = true;
+
+    Map<ResourceLocation, EnumWearable> configWearables = Maps.newHashMap();
+
+    /** Cache of wearables for players that die when keep inventory is on. */
+    Map<UUID, PlayerWearables> player_inventory_cache = Maps.newHashMap();
+
+    Set<UUID> toKeep = Sets.newHashSet();
+
+    public ThutWearables()
     {
-        public void preInit(FMLCommonSetupEvent event)
-        {
-        }
+        for (final Phase phase : Phase.values())
+            ThutWearables.initMethods.put(phase, new HashSet<java.lang.reflect.Method>());
+        CompatParser.findClasses("thut.wearables.compat", ThutWearables.initMethods);
+        ThutWearables.doPhase(Phase.CONSTRUCT, null);
+        ThutWearables.instance = this;
 
-        @Override
-        public Object getServerGuiElement(int ID, PlayerEntity player, World world, int x, int y, int z)
-        {
-            if (ID != -1)
-            {
-                Entity mob = world.getEntityByID(ID);
-                if (!(mob instanceof LivingEntity)) return null;
-                LivingEntity base = (LivingEntity) mob;
-                if (getWearables(base) != null) { return new ContainerWearables(base, player); }
-            }
-            return new ContainerWearables(player);
-        }
+        MinecraftForge.EVENT_BUS.register(this);
 
-        @Override
-        public Object getClientGuiElement(int ID, PlayerEntity player, World world, int x, int y, int z)
+        // Register the setup method for modloading
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(ThutWearables.proxy::setup);
+        // Register the doClientStuff method for modloading
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(ThutWearables.proxy::setupClient);
+        // Register the doClientStuff method for modloading
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(ThutWearables.proxy::finish);
+    }
+    // TODO wearables drops
+    // @SubscribeEvent(priority = EventPriority.HIGHEST)
+    // public void dropLoot(final PlayerDropsEvent event)
+    // {
+    // final PlayerEntity player = event.getPlayerEntity();
+    // final GameRules rules = this.overworldRules ?
+    // player.getServer().getWorld(0).getGameRules()
+    // : player.getEntityWorld().getGameRules();
+    // final PlayerWearables cap = ThutWearables.getWearables(player);
+    // if (rules.getBoolean("keepInventory")) return;
+    //
+    // for (int i = 0; i < 13; i++)
+    // {
+    // final ItemStack stack = cap.getStackInSlot(i);
+    // if (stack != null)
+    // {
+    // EnumWearable.takeOff(player, stack, i);
+    // final double d0 = player.posY - 0.3D + player.getEyeHeight();
+    // final ItemEntity drop = new ItemEntity(player.getEntityWorld(),
+    // player.posX, d0, player.posZ, stack);
+    // final float f = player.getRNG().nextFloat() * 0.5F;
+    // final float f1 = player.getRNG().nextFloat() * ((float) Math.PI * 2F);
+    // drop.motionX = -MathHelper.sin(f1) * f;
+    // drop.motionZ = MathHelper.cos(f1) * f;
+    // drop.motionY = 0.20000000298023224D;
+    // event.getDrops().add(drop);
+    // cap.setStackInSlot(i, ItemStack.EMPTY);
+    // }
+    // }
+    // ThutWearables.syncWearables(player);
+    // }
+
+    /**
+     * Syncs wearables to the player when they join a world. This fixes client
+     * issues when they use nether portals, etc
+     *
+     * @param event
+     */
+    @SubscribeEvent
+    public void joinWorld(final EntityJoinWorldEvent event)
+    {
+        if (event.getWorld().isRemote) return;
+        if (event.getEntity() instanceof ServerPlayerEntity) ThutWearables.packets.sendTo(new PacketSyncWearables(
+                (LivingEntity) event.getEntity()), (ServerPlayerEntity) event.getEntity());
+    }
+
+    @SubscribeEvent
+    public void onEntityCapabilityAttach(final AttachCapabilitiesEvent<Entity> event)
+    {
+        if (event.getObject() instanceof LivingEntity) event.addCapability(new ResourceLocation(ThutWearables.MODID,
+                "wearables"), new PlayerWearables());
+    }
+
+    @SubscribeEvent
+    public void onItemCapabilityAttach(final AttachCapabilitiesEvent<ItemStack> event)
+    {
+        final ResourceLocation loc = event.getObject().getItem().getRegistryName();
+        if (this.configWearables.containsKey(loc))
         {
-            return null;
+            final EnumWearable slot = this.configWearables.get(loc);
+            event.addCapability(new ResourceLocation(ThutWearables.MODID, "configwearable"), new ConfigWearable(slot));
         }
     }
 
-    public static class ServerProxy extends CommonProxy
+    @SubscribeEvent
+    public void PlayerLoggedOutEvent(final PlayerLoggedOutEvent event)
     {
-        @Override
-        public Object getServerGuiElement(int ID, PlayerEntity player, World world, int x, int y, int z)
+        this.player_inventory_cache.remove(event.getPlayer().getUniqueID());
+    }
+
+    @SubscribeEvent
+    public void playerTick(final LivingUpdateEvent event)
+    {
+        if (event.getEntity().getEntityWorld().isRemote) return;
+        if (event.getEntity() instanceof PlayerEntity && event.getEntity().isAlive())
         {
-            return super.getServerGuiElement(ID, player, world, x, y, z);
+            final PlayerEntity wearer = (PlayerEntity) event.getEntity();
+            final PlayerWearables wearables = ThutWearables.getWearables(wearer);
+            for (int i = 0; i < 13; i++)
+                EnumWearable.tick(wearer, wearables.getStackInSlot(i), i);
+            if (wearer instanceof ServerPlayerEntity) this.player_inventory_cache.put(wearer.getUniqueID(), wearables);
         }
     }
 
-    public static class ClientProxy extends CommonProxy
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void preDrop(final LivingDeathEvent event)
     {
-        @Override
-        public void preInit(FMLCommonSetupEvent event)
+        if (!(event.getEntity() instanceof ServerPlayerEntity)) return;
+        final PlayerEntity player = (PlayerEntity) event.getEntity();
+        final GameRules rules = this.overworldRules ? player.getServer().getWorld(DimensionType.OVERWORLD)
+                .getGameRules() : player.getEntityWorld().getGameRules();
+        if (rules.getBoolean(GameRules.KEEP_INVENTORY))
         {
-            GuiEvents.init();
-            MinecraftForge.EVENT_BUS.register(new WearableEventHandler());
+            final PlayerWearables cap = ThutWearables.getWearables(player);
+            this.player_inventory_cache.put(player.getUniqueID(), cap);
+            this.toKeep.add(player.getUniqueID());
+            return;
         }
+    }
 
-        @Override
-        public Object getClientGuiElement(int ID, PlayerEntity player, World world, int x, int y, int z)
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void respawn(final PlayerRespawnEvent event)
+    {
+        final PlayerEntity wearer = event.getPlayer();
+        if (wearer instanceof ServerPlayerEntity && (this.toKeep.contains(wearer.getUniqueID()) || event
+                .isEndConquered()))
         {
-            if (ID != -1)
-            {
-                Entity mob = world.getEntityByID(ID);
-                if (!(mob instanceof LivingEntity)) return null;
-                LivingEntity base = (LivingEntity) mob;
-                if (getWearables(base) != null) { return new GuiWearables(base, player); }
-            }
-            return new GuiWearables(player);
+            final CompoundNBT tag = this.player_inventory_cache.get(wearer.getUniqueID()).serializeNBT();
+            final PlayerWearables wearables = ThutWearables.getWearables(wearer);
+            wearables.deserializeNBT(tag);
+            this.toKeep.remove(wearer.getUniqueID());
+            ThutWearables.syncWearables(wearer);
         }
+    }
+
+    @SubscribeEvent
+    /**
+     * Register the commands.
+     *
+     * @param event
+     */
+    public void serverStarting(final FMLServerStartingEvent event)
+    {
+        CommandGui.register(event.getCommandDispatcher());
+    }
+
+    /**
+     * Syncs wearables of other mobs to player when they start tracking them.
+     *
+     * @param event
+     */
+    @SubscribeEvent
+    public void startTracking(final StartTracking event)
+    {
+        if (event.getTarget() instanceof LivingEntity && event.getEntityPlayer().isServerWorld()) ThutWearables.packets
+                .sendTo(new PacketSyncWearables((LivingEntity) event.getTarget()), (ServerPlayerEntity) event
+                        .getEntityPlayer());
     }
 }

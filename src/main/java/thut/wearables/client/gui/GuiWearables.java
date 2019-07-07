@@ -2,64 +2,49 @@ package thut.wearables.client.gui;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 
-import net.minecraft.client.gui.inventory.GuiInventory;
-import net.minecraft.client.renderer.InventoryEffectRenderer;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.client.gui.DisplayEffectsScreen;
+import net.minecraft.client.gui.screen.inventory.InventoryScreen;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.util.ResourceLocation;
 import thut.wearables.ThutWearables;
 import thut.wearables.inventory.ContainerWearables;
 
-public class GuiWearables extends InventoryEffectRenderer
+public class GuiWearables extends DisplayEffectsScreen<ContainerWearables>
 {
     public static final ResourceLocation background = new ResourceLocation(ThutWearables.MODID,
             "textures/gui/wearables.png");
 
     /** The old x position of the mouse pointer */
-    private float                        oldMouseX;
+    private float oldMouseX;
     /** The old y position of the mouse pointer */
-    private float                        oldMouseY;
-    private final LivingEntity       toRender;
+    private float oldMouseY;
 
-    public GuiWearables(PlayerEntity player)
+    public GuiWearables(final ContainerWearables container, final PlayerInventory player)
     {
-        this(player, player);
+        super(container, player, container.wearer.getDisplayName());
     }
 
-    public GuiWearables(LivingEntity wearer, PlayerEntity player)
-    {
-        super(new ContainerWearables(wearer, player));
-        this.toRender = wearer;
-    }
-
-    /** Adds the buttons (and other controls) to the screen in question. */
     @Override
-    public void initGui()
+    protected void drawGuiContainerBackgroundLayer(final float p_146976_1_, final int p_146976_2_,
+            final int p_146976_3_)
     {
-        this.buttonList.clear();
-        super.initGui();
+        GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+        this.minecraft.getTextureManager().bindTexture(GuiWearables.background);
+        final int i = this.guiLeft;
+        final int j = this.guiTop;
+        this.blit(i, j, 0, 0, this.xSize, this.ySize);
+        InventoryScreen.drawEntityOnScreen(i + 51, j + 75, 30, i + 51 - this.oldMouseX, j + 75 - 50 - this.oldMouseY,
+                this.container.wearer);
     }
 
     /** Draws the screen and all the components in it. */
     @Override
-    public void drawScreen(int mouseX, int mouseY, float partialTicks)
+    public void render(final int mouseX, final int mouseY, final float partialTicks)
     {
-        drawDefaultBackground();
-        super.drawScreen(mouseX, mouseY, partialTicks);
+        this.renderBackground();
+        super.render(mouseX, mouseY, partialTicks);
         this.oldMouseX = mouseX;
         this.oldMouseY = mouseY;
         this.renderHoveredToolTip(mouseX, mouseY);
-    }
-
-    @Override
-    protected void drawGuiContainerBackgroundLayer(float p_146976_1_, int p_146976_2_, int p_146976_3_)
-    {
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-        this.mc.getTextureManager().bindTexture(background);
-        int i = this.guiLeft;
-        int j = this.guiTop;
-        this.drawTexturedModalRect(i, j, 0, 0, this.xSize, this.ySize);
-        GuiInventory.drawEntityOnScreen(i + 51, j + 75, 30, i + 51 - this.oldMouseX, j + 75 - 50 - this.oldMouseY,
-                this.toRender);
     }
 }

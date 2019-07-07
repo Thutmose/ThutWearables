@@ -1,61 +1,34 @@
 package thut.wearables.inventory;
 
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
 import thut.wearables.EnumWearable;
 
-public class InventoryWrapper implements IInventory
+public class InventoryWrapper extends Inventory
 {
     final PlayerWearables wearable;
 
-    public InventoryWrapper(PlayerWearables inventoryIn)
+    public InventoryWrapper(final PlayerWearables inventoryIn)
     {
+        super(13);
         this.wearable = inventoryIn;
     }
 
     @Override
-    public String getName()
+    public void clear()
     {
-        return "wearables";
     }
 
     @Override
-    public boolean hasCustomName()
+    public void closeInventory(final PlayerEntity player)
     {
-        return false;
     }
 
     @Override
-    public ITextComponent getDisplayName()
+    public ItemStack decrStackSize(final int index, final int count)
     {
-        return new TranslationTextComponent("pokecube.wearables");
-    }
-
-    @Override
-    public int getSizeInventory()
-    {
-        return 13;
-    }
-
-    @Override
-    public ItemStack decrStackSize(int index, int count)
-    {
-        return removeStackFromSlot(index);
-    }
-
-    @Override
-    public ItemStack removeStackFromSlot(int index)
-    {
-        return wearable.extractItem(index, 1, false);
-    }
-
-    @Override
-    public void setInventorySlotContents(int index, ItemStack stack)
-    {
-        wearable.setStackInSlot(index, stack);
+        return this.removeStackFromSlot(index);
     }
 
     @Override
@@ -65,52 +38,15 @@ public class InventoryWrapper implements IInventory
     }
 
     @Override
-    public void markDirty()
+    public int getSizeInventory()
     {
+        return 13;
     }
 
     @Override
-    public boolean isUsableByPlayer(PlayerEntity player)
+    public ItemStack getStackInSlot(final int index)
     {
-        return true;
-    }
-
-    @Override
-    public void openInventory(PlayerEntity player)
-    {
-    }
-
-    @Override
-    public void closeInventory(PlayerEntity player)
-    {
-    }
-
-    @Override
-    public boolean isItemValidForSlot(int index, ItemStack stack)
-    {
-        return EnumWearable.getSlot(stack) == EnumWearable.getWearable(index);
-    }
-
-    @Override
-    public int getField(int id)
-    {
-        return 0;
-    }
-
-    @Override
-    public void setField(int id, int value)
-    {
-    }
-
-    @Override
-    public int getFieldCount()
-    {
-        return 0;
-    }
-
-    @Override
-    public void clear()
-    {
+        return this.wearable.getStackInSlot(index);
     }
 
     @Override
@@ -120,8 +56,36 @@ public class InventoryWrapper implements IInventory
     }
 
     @Override
-    public ItemStack getStackInSlot(int index)
+    public boolean isItemValidForSlot(final int index, final ItemStack stack)
     {
-        return wearable.getStackInSlot(index);
+        return EnumWearable.getSlot(stack) == EnumWearable.getWearable(index);
+    }
+
+    @Override
+    public boolean isUsableByPlayer(final PlayerEntity player)
+    {
+        return true;
+    }
+
+    @Override
+    public void markDirty()
+    {
+    }
+
+    @Override
+    public void openInventory(final PlayerEntity player)
+    {
+    }
+
+    @Override
+    public ItemStack removeStackFromSlot(final int index)
+    {
+        return this.wearable.extractItem(index, 1, false);
+    }
+
+    @Override
+    public void setInventorySlotContents(final int index, final ItemStack stack)
+    {
+        this.wearable.setStackInSlot(index, stack);
     }
 }

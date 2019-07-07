@@ -14,139 +14,121 @@ public enum EnumWearable
 
     FINGER(2, 0), WRIST(2, 2), ANKLE(2, 4), NECK(6), BACK(7), WAIST(8), EAR(2, 9), EYE(11), HAT(12);
 
-    public final int             slots;
-    public final int             index;
     static EnumWearable[]        BYINDEX  = new EnumWearable[13];
     static Set<IWearableChecker> checkers = Sets.newHashSet();
     static
     {
-        BYINDEX[0] = FINGER;
-        BYINDEX[1] = FINGER;
-        BYINDEX[2] = WRIST;
-        BYINDEX[3] = WRIST;
-        BYINDEX[4] = ANKLE;
-        BYINDEX[5] = ANKLE;
-        BYINDEX[6] = NECK;
-        BYINDEX[7] = BACK;
-        BYINDEX[8] = WAIST;
-        BYINDEX[9] = EAR;
-        BYINDEX[10] = EAR;
-        BYINDEX[11] = EYE;
-        BYINDEX[12] = HAT;
+        EnumWearable.BYINDEX[0] = FINGER;
+        EnumWearable.BYINDEX[1] = FINGER;
+        EnumWearable.BYINDEX[2] = WRIST;
+        EnumWearable.BYINDEX[3] = WRIST;
+        EnumWearable.BYINDEX[4] = ANKLE;
+        EnumWearable.BYINDEX[5] = ANKLE;
+        EnumWearable.BYINDEX[6] = NECK;
+        EnumWearable.BYINDEX[7] = BACK;
+        EnumWearable.BYINDEX[8] = WAIST;
+        EnumWearable.BYINDEX[9] = EAR;
+        EnumWearable.BYINDEX[10] = EAR;
+        EnumWearable.BYINDEX[11] = EYE;
+        EnumWearable.BYINDEX[12] = HAT;
 
-        checkers.add(new IWearableChecker()
+        EnumWearable.checkers.add(new IWearableChecker()
         {
             @Override
-            public EnumWearable getSlot(ItemStack stack)
+            public boolean canRemove(final LivingEntity player, final ItemStack itemstack, final EnumWearable slot,
+                    final int subIndex)
+            {
+                if (itemstack == null) return true;
+                IActiveWearable wearable;
+                if ((wearable = itemstack.getCapability(ThutWearables.WEARABLE_CAP, null).orElse(null)) != null)
+                    return wearable.canRemove(player, itemstack, slot, subIndex);
+                if (itemstack.getItem() instanceof IActiveWearable) return ((IActiveWearable) itemstack.getItem())
+                        .canRemove(player, itemstack, slot, subIndex);
+                return true;
+            }
+
+            @Override
+            public EnumWearable getSlot(final ItemStack stack)
             {
                 if (stack == null) return null;
                 IActiveWearable wearable;
-                if ((wearable = stack.getCapability(IActiveWearable.WEARABLE_CAP, null)) != null)
+                if ((wearable = stack.getCapability(ThutWearables.WEARABLE_CAP, null).orElse(null)) != null)
                     return wearable.getSlot(stack);
-                if (stack.getItem() instanceof IWearable) { return ((IWearable) stack.getItem()).getSlot(stack); }
+                if (stack.getItem() instanceof IWearable) return ((IWearable) stack.getItem()).getSlot(stack);
                 return null;
             }
 
             @Override
-            public void onPutOn(LivingEntity player, ItemStack itemstack, EnumWearable slot, int subIndex)
+            public void onInteract(final LivingEntity player, final ItemStack itemstack, final EnumWearable slot,
+                    final int subIndex)
+            {
+                if (itemstack != null && player instanceof PlayerEntity) itemstack.getItem().onItemRightClick(player
+                        .getEntityWorld(), (PlayerEntity) player, Hand.MAIN_HAND);
+            }
+
+            @Override
+            public void onPutOn(final LivingEntity player, final ItemStack itemstack, final EnumWearable slot,
+                    final int subIndex)
             {
                 if (itemstack == null) return;
                 IActiveWearable wearable;
-                if ((wearable = itemstack.getCapability(IActiveWearable.WEARABLE_CAP, null)) != null)
+                if ((wearable = itemstack.getCapability(ThutWearables.WEARABLE_CAP, null).orElse(null)) != null)
                 {
                     wearable.onPutOn(player, itemstack, slot, subIndex);
                     return;
                 }
-                if (itemstack.getItem() instanceof IActiveWearable)
-                    ((IActiveWearable) itemstack.getItem()).onPutOn(player, itemstack, slot, subIndex);
+                if (itemstack.getItem() instanceof IActiveWearable) ((IActiveWearable) itemstack.getItem()).onPutOn(
+                        player, itemstack, slot, subIndex);
             }
 
             @Override
-            public void onTakeOff(LivingEntity player, ItemStack itemstack, EnumWearable slot, int subIndex)
+            public void onTakeOff(final LivingEntity player, final ItemStack itemstack, final EnumWearable slot,
+                    final int subIndex)
             {
                 if (itemstack == null) return;
                 IActiveWearable wearable;
-                if ((wearable = itemstack.getCapability(IActiveWearable.WEARABLE_CAP, null)) != null)
+                if ((wearable = itemstack.getCapability(ThutWearables.WEARABLE_CAP, null).orElse(null)) != null)
                 {
                     wearable.onTakeOff(player, itemstack, slot, subIndex);
                     return;
                 }
-                if (itemstack.getItem() instanceof IActiveWearable)
-                    ((IActiveWearable) itemstack.getItem()).onTakeOff(player, itemstack, slot, subIndex);
+                if (itemstack.getItem() instanceof IActiveWearable) ((IActiveWearable) itemstack.getItem()).onTakeOff(
+                        player, itemstack, slot, subIndex);
             }
 
             @Override
-            public void onUpdate(LivingEntity player, ItemStack itemstack, EnumWearable slot, int subIndex)
+            public void onUpdate(final LivingEntity player, final ItemStack itemstack, final EnumWearable slot,
+                    final int subIndex)
             {
                 if (itemstack == null) return;
                 IActiveWearable wearable;
-                if ((wearable = itemstack.getCapability(IActiveWearable.WEARABLE_CAP, null)) != null)
-                {
+                if ((wearable = itemstack.getCapability(ThutWearables.WEARABLE_CAP, null).orElse(null)) != null)
                     wearable.onUpdate(player, itemstack, slot, subIndex);
-                }
-                if (itemstack.getItem() instanceof IActiveWearable)
-                    ((IActiveWearable) itemstack.getItem()).onUpdate(player, itemstack, slot, subIndex);
-                else if (player instanceof PlayerEntity)
-                    itemstack.getItem().onArmorTick(player.getEntityWorld(), (PlayerEntity) player, itemstack);
-                else itemstack.getItem().onUpdate(itemstack, player.getEntityWorld(), player, slot.index + subIndex,
-                        false);
-            }
-
-            @Override
-            public void onInteract(LivingEntity player, ItemStack itemstack, EnumWearable slot, int subIndex)
-            {
-                if (itemstack != null && player instanceof PlayerEntity)
-                {
-                    CompatWrapper.rightClickWith(itemstack, (PlayerEntity) player, Hand.MAIN_HAND);
-                }
-            }
-
-            @Override
-            public boolean canRemove(LivingEntity player, ItemStack itemstack, EnumWearable slot, int subIndex)
-            {
-                if (itemstack == null) return true;
-                IActiveWearable wearable;
-                if ((wearable = itemstack.getCapability(IActiveWearable.WEARABLE_CAP, null)) != null) { return wearable
-                        .canRemove(player, itemstack, slot, subIndex); }
-                if (itemstack.getItem() instanceof IActiveWearable)
-                    return ((IActiveWearable) itemstack.getItem()).canRemove(player, itemstack, slot, subIndex);
-                return true;
+                if (itemstack.getItem() instanceof IActiveWearable) ((IActiveWearable) itemstack.getItem()).onUpdate(
+                        player, itemstack, slot, subIndex);
+                else if (player instanceof PlayerEntity) itemstack.getItem().onArmorTick(itemstack, player
+                        .getEntityWorld(), (PlayerEntity) player);
+                else itemstack.getItem().inventoryTick(itemstack, player.getEntityWorld(), player, slot.index
+                        + subIndex, false);
             }
         });
     }
 
-    private EnumWearable(int index)
+    public static boolean canTakeOff(final LivingEntity wearer, final ItemStack stack, final int index)
     {
-        this.index = index;
-        this.slots = 1;
+        if (stack == null) return true;
+        final EnumWearable slot = EnumWearable.getWearable(index);
+        final int subIndex = EnumWearable.getSubIndex(index);
+        for (final IWearableChecker checker : EnumWearable.checkers)
+            if (!checker.canRemove(wearer, stack, slot, subIndex)) return false;
+        return true;
     }
 
-    private EnumWearable(int slots, int index)
-    {
-        this.index = index;
-        this.slots = slots;
-    }
-
-    public static EnumWearable getWearable(int index)
-    {
-        return BYINDEX[index];
-    }
-
-    public static int getSubIndex(int index)
-    {
-        return index - BYINDEX[index].index;
-    }
-
-    public static void registerWearableChecker(IWearableChecker checker)
-    {
-        checkers.add(checker);
-    }
-
-    public static String getIcon(int index)
+    public static String getIcon(final int index)
     {
         String tex = null;
-        EnumWearable slot = EnumWearable.getWearable(index);
-        int subIndex = EnumWearable.getSubIndex(index);
+        final EnumWearable slot = EnumWearable.getWearable(index);
+        final int subIndex = EnumWearable.getSubIndex(index);
         switch (slot)
         {
         case ANKLE:
@@ -182,70 +164,81 @@ public enum EnumWearable
         return tex;
     }
 
-    public static EnumWearable getSlot(ItemStack item)
+    public static EnumWearable getSlot(final ItemStack item)
     {
         if (item == null || item.getItem() == null) return null;
-        for (IWearableChecker checker : checkers)
+        for (final IWearableChecker checker : EnumWearable.checkers)
         {
-            EnumWearable ret = checker.getSlot(item);
+            final EnumWearable ret = checker.getSlot(item);
             if (ret != null) return ret;
         }
         return null;
     }
 
-    public static void interact(PlayerEntity player, ItemStack item, int index)
+    public static int getSubIndex(final int index)
+    {
+        return index - EnumWearable.BYINDEX[index].index;
+    }
+
+    public static EnumWearable getWearable(final int index)
+    {
+        return EnumWearable.BYINDEX[index];
+    }
+
+    public static void interact(final PlayerEntity player, final ItemStack item, final int index)
     {
         if (item == null) return;
-        EnumWearable slot = getWearable(index);
-        int subIndex = getSubIndex(index);
-        for (IWearableChecker checker : checkers)
-        {
+        final EnumWearable slot = EnumWearable.getWearable(index);
+        final int subIndex = EnumWearable.getSubIndex(index);
+        for (final IWearableChecker checker : EnumWearable.checkers)
             checker.onInteract(player, item, slot, subIndex);
-        }
     }
 
-    public static void putOn(LivingEntity wearer, ItemStack stack, int index)
+    public static void putOn(final LivingEntity wearer, final ItemStack stack, final int index)
     {
         if (stack == null) return;
-        EnumWearable slot = getWearable(index);
-        int subIndex = getSubIndex(index);
-        for (IWearableChecker checker : checkers)
-        {
+        final EnumWearable slot = EnumWearable.getWearable(index);
+        final int subIndex = EnumWearable.getSubIndex(index);
+        for (final IWearableChecker checker : EnumWearable.checkers)
             checker.onPutOn(wearer, stack, slot, subIndex);
-        }
     }
 
-    public static void takeOff(LivingEntity wearer, ItemStack stack, int index)
+    public static void registerWearableChecker(final IWearableChecker checker)
+    {
+        EnumWearable.checkers.add(checker);
+    }
+
+    public static void takeOff(final LivingEntity wearer, final ItemStack stack, final int index)
     {
         if (stack == null) return;
-        EnumWearable slot = getWearable(index);
-        int subIndex = getSubIndex(index);
-        for (IWearableChecker checker : checkers)
-        {
+        final EnumWearable slot = EnumWearable.getWearable(index);
+        final int subIndex = EnumWearable.getSubIndex(index);
+        for (final IWearableChecker checker : EnumWearable.checkers)
             checker.onTakeOff(wearer, stack, slot, subIndex);
-        }
     }
 
-    public static void tick(LivingEntity wearer, ItemStack stack, int index)
+    public static void tick(final LivingEntity wearer, final ItemStack stack, final int index)
     {
         if (stack == null) return;
-        EnumWearable slot = getWearable(index);
-        int subIndex = getSubIndex(index);
-        for (IWearableChecker checker : checkers)
-        {
+        final EnumWearable slot = EnumWearable.getWearable(index);
+        final int subIndex = EnumWearable.getSubIndex(index);
+        for (final IWearableChecker checker : EnumWearable.checkers)
             checker.onUpdate(wearer, stack, slot, subIndex);
-        }
     }
 
-    public static boolean canTakeOff(LivingEntity wearer, ItemStack stack, int index)
+    public final int slots;
+
+    public final int index;
+
+    private EnumWearable(final int index)
     {
-        if (stack == null) return true;
-        EnumWearable slot = getWearable(index);
-        int subIndex = getSubIndex(index);
-        for (IWearableChecker checker : checkers)
-        {
-            if (!checker.canRemove(wearer, stack, slot, subIndex)) return false;
-        }
-        return true;
+        this.index = index;
+        this.slots = 1;
+    }
+
+    private EnumWearable(final int slots, final int index)
+    {
+        this.index = index;
+        this.slots = slots;
     }
 }

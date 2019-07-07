@@ -3,113 +3,112 @@ package thut.wearables.impl;
 import com.mojang.blaze3d.platform.GlStateManager;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.model.ItemCameraTransforms.TransformType;
+import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.common.util.LazyOptional;
 import thut.wearables.EnumWearable;
 import thut.wearables.IActiveWearable;
+import thut.wearables.ThutWearables;
 
 public class ConfigWearable implements IActiveWearable, ICapabilityProvider
 {
-    EnumWearable slot;
+    private final LazyOptional<IActiveWearable> holder = LazyOptional.of(() -> this);
+    EnumWearable                                slot;
 
-    public ConfigWearable(EnumWearable slot)
+    public ConfigWearable(final EnumWearable slot)
     {
         this.slot = slot;
     }
 
     @Override
-    public EnumWearable getSlot(ItemStack stack)
+    public boolean dyeable(final ItemStack stack)
     {
-        if (slot == null && stack.hasTag() && stack.getTag().hasKey("wslot"))
-        {
-            slot = EnumWearable.valueOf(stack.getTag().getString("wslot"));
-        }
-        return slot;
+        // TODO see if this should be appled here.
+        return false;
     }
 
     @Override
-    public void renderWearable(EnumWearable slot, LivingEntity wearer, ItemStack stack, float partialTicks)
+    public <T> LazyOptional<T> getCapability(final Capability<T> capability, final Direction facing)
+    {
+        return ThutWearables.WEARABLE_CAP.orEmpty(capability, this.holder);
+    }
+
+    @Override
+    public EnumWearable getSlot(final ItemStack stack)
+    {
+        if (this.slot == null && stack.hasTag() && stack.getTag().contains("wslot")) this.slot = EnumWearable.valueOf(
+                stack.getTag().getString("wslot"));
+        return this.slot;
+    }
+
+    @Override
+    public void renderWearable(final EnumWearable slot, final LivingEntity wearer, final ItemStack stack,
+            final float partialTicks)
     {
         // TODO way to register renderers for config wearables
 
         // This is for items that should just be directly rendered
-        if (stack.hasTag() && stack.getTag().hasKey("wslot"))
+        if (stack.hasTag() && stack.getTag().contains("wslot"))
         {
 
             GlStateManager.pushMatrix();
 
-            GlStateManager.rotate(180, 0, 0, 1);
+            GlStateManager.rotatef(180, 0, 0, 1);
 
-            if (stack.getTag().hasKey("winfo"))
+            if (stack.getTag().contains("winfo"))
             {
-                CompoundNBT info = stack.getTag().getCompound("winfo");
-                if (info.hasKey("scale"))
+                final CompoundNBT info = stack.getTag().getCompound("winfo");
+                if (info.contains("scale"))
                 {
-                    float scale = info.getFloat("scale");
-                    GlStateManager.scale(scale, scale, scale);
+                    final float scale = info.getFloat("scale");
+                    GlStateManager.scalef(scale, scale, scale);
                 }
-                if (info.hasKey("shiftx"))
+                if (info.contains("shiftx"))
                 {
-                    float shift = info.getFloat("shiftx");
-                    GlStateManager.translate(shift, 0, 0);
+                    final float shift = info.getFloat("shiftx");
+                    GlStateManager.translatef(shift, 0, 0);
                 }
-                if (info.hasKey("shifty"))
+                if (info.contains("shifty"))
                 {
-                    float shift = info.getFloat("shifty");
-                    GlStateManager.translate(0, shift, 0);
+                    final float shift = info.getFloat("shifty");
+                    GlStateManager.translatef(0, shift, 0);
                 }
-                if (info.hasKey("shiftz"))
+                if (info.contains("shiftz"))
                 {
-                    float shift = info.getFloat("shiftz");
-                    GlStateManager.translate(0, 0, shift);
+                    final float shift = info.getFloat("shiftz");
+                    GlStateManager.translatef(0, 0, shift);
                 }
-                if (info.hasKey("rotx"))
+                if (info.contains("rotx"))
                 {
-                    float shift = info.getFloat("rotx");
-                    GlStateManager.rotate(shift, 1, 0, 0);
+                    final float shift = info.getFloat("rotx");
+                    GlStateManager.rotatef(shift, 1, 0, 0);
                 }
-                if (info.hasKey("roty"))
+                if (info.contains("roty"))
                 {
-                    float shift = info.getFloat("roty");
-                    GlStateManager.rotate(shift, 0, 1, 0);
+                    final float shift = info.getFloat("roty");
+                    GlStateManager.rotatef(shift, 0, 1, 0);
                 }
-                if (info.hasKey("rotz"))
+                if (info.contains("rotz"))
                 {
-                    float shift = info.getFloat("rotz");
-                    GlStateManager.rotate(shift, 0, 0, 1);
+                    final float shift = info.getFloat("rotz");
+                    GlStateManager.rotatef(shift, 0, 0, 1);
                 }
 
             }
 
-            GlStateManager.translate(-0.25, 0, 0);
-            Minecraft.getInstance().getItemRenderer().renderItem(wearer, stack, TransformType.NONE);
+            GlStateManager.translatef(-0.25f, 0, 0);
+            Minecraft.getInstance().textureManager.bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
+            final IBakedModel model = Minecraft.getInstance().getItemRenderer().getModelWithOverrides(stack);
+            Minecraft.getInstance().getItemRenderer().renderItem(stack, model);
             GlStateManager.popMatrix();
         }
 
-    }
-
-    @Override
-    public boolean hasCapability(Capability<?> capability, Direction facing)
-    {
-        return capability == WEARABLE_CAP;
-    }
-
-    @Override
-    public <T> T getCapability(Capability<T> capability, Direction facing)
-    {
-        return hasCapability(capability, facing) ? IActiveWearable.WEARABLE_CAP.cast(this) : null;
-    }
-
-    @Override
-    public boolean dyeable(ItemStack stack)
-    {
-        // TODO see if this should be appled here.
-        return false;
     }
 
 }

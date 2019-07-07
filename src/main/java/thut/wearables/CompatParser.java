@@ -21,92 +21,80 @@ public class CompatParser
     public static class ClassFinder
     {
 
-        private static final char   DOT               = '.';
+        private static final char DOT = '.';
 
-        private static final char   SLASH             = '/';
+        private static final char SLASH = '/';
 
-        private static final String CLASS_SUFFIX      = ".class";
+        private static final String CLASS_SUFFIX = ".class";
 
         private static final String BAD_PACKAGE_ERROR = "Unable to get resources from path '%s'. Are you sure the package '%s' exists?";
 
         public static List<Class<?>> find(String scannedPackage) throws UnsupportedEncodingException
         {
-            String scannedPath = scannedPackage.replace(DOT, SLASH);
-            URL scannedUrl = Thread.currentThread().getContextClassLoader().getResource(scannedPath);
-            if (scannedUrl == null) { throw new IllegalArgumentException(
-                    String.format(BAD_PACKAGE_ERROR, scannedPath, scannedPackage)); }
-            File scannedDir = new File(
-                    java.net.URLDecoder.decode(scannedUrl.getFile(), Charset.defaultCharset().name()));
+            final String scannedPath = scannedPackage.replace(ClassFinder.DOT, ClassFinder.SLASH);
+            final URL scannedUrl = Thread.currentThread().getContextClassLoader().getResource(scannedPath);
+            if (scannedUrl == null) throw new IllegalArgumentException(String.format(ClassFinder.BAD_PACKAGE_ERROR,
+                    scannedPath, scannedPackage));
+            final File scannedDir = new File(java.net.URLDecoder.decode(scannedUrl.getFile(), Charset.defaultCharset()
+                    .name()));
 
-            Set<Class<?>> classes = Sets.newHashSet();
+            final Set<Class<?>> classes = Sets.newHashSet();
 
-            classes.addAll(findInFolder(new File("./mods/"), scannedPackage));
+            classes.addAll(ClassFinder.findInFolder(new File("./mods/"), scannedPackage));
 
-            if (scannedDir.exists()) for (File file : scannedDir.listFiles())
-            {
-                classes.addAll(findInFolder(file, scannedPackage));
-            }
+            if (scannedDir.exists()) for (final File file : scannedDir.listFiles())
+                classes.addAll(ClassFinder.findInFolder(file, scannedPackage));
             return Lists.newArrayList(classes);
         }
 
         private static List<Class<?>> findInFolder(File file, String scannedPackage)
         {
-            List<Class<?>> classes = new ArrayList<Class<?>>();
+            final List<Class<?>> classes = new ArrayList<>();
 
-            if (file.toString().endsWith(".jar"))
+            if (file.toString().endsWith(".jar")) try
             {
-                try
+                String name = file.toString();
+                final String pack = scannedPackage.replace(ClassFinder.DOT, ClassFinder.SLASH) + ClassFinder.SLASH;
+                name = name.replace("file:", "");
+                name = name.replaceAll("(.jar)(.*)", ".jar");
+                file = new File(name);
+                final ZipFile zip = new ZipFile(file);
+                final Enumeration<? extends ZipEntry> entries = zip.entries();
+                while (entries.hasMoreElements())
                 {
-                    String name = file.toString();
-                    String pack = scannedPackage.replace(DOT, SLASH) + SLASH;
-                    name = name.replace("file:", "");
-                    name = name.replaceAll("(.jar)(.*)", ".jar");
-                    file = new File(name);
-                    ZipFile zip = new ZipFile(file);
-                    Enumeration<? extends ZipEntry> entries = zip.entries();
-                    while (entries.hasMoreElements())
+                    final ZipEntry entry = entries.nextElement();
+                    final String s = entry.getName();
+                    if (s.startsWith(pack) && s.endsWith(ClassFinder.CLASS_SUFFIX)) try
                     {
-                        ZipEntry entry = entries.nextElement();
-                        String s = entry.getName();
-                        if (s.startsWith(pack) && s.endsWith(CLASS_SUFFIX))
-                        {
-                            try
-                            {
-                                classes.add(Class.forName(s.replace(CLASS_SUFFIX, "").replace(SLASH, DOT)));
-                            }
-                            catch (Throwable ignore)
-                            {
-                            }
-                        }
+                        classes.add(Class.forName(s.replace(ClassFinder.CLASS_SUFFIX, "").replace(ClassFinder.SLASH,
+                                ClassFinder.DOT)));
                     }
-                    zip.close();
+                    catch (final Throwable ignore)
+                    {
+                    }
                 }
-                catch (Throwable e)
-                {
-                    e.printStackTrace();
-                }
+                zip.close();
+            }
+            catch (final Throwable e)
+            {
+                e.printStackTrace();
             }
             else
             {
                 String resource = file.toString().replaceAll("\\" + System.getProperty("file.separator"), ".");
-                if (resource.indexOf(scannedPackage) != -1)
-                    resource = resource.substring(resource.indexOf(scannedPackage), resource.length());
-                if (file.isDirectory())
+                if (resource.indexOf(scannedPackage) != -1) resource = resource.substring(resource.indexOf(
+                        scannedPackage), resource.length());
+                if (file.isDirectory()) for (final File child : file.listFiles())
+                    classes.addAll(ClassFinder.findInFolder(child, scannedPackage));
+                else if (resource.endsWith(ClassFinder.CLASS_SUFFIX))
                 {
-                    for (File child : file.listFiles())
-                    {
-                        classes.addAll(findInFolder(child, scannedPackage));
-                    }
-                }
-                else if (resource.endsWith(CLASS_SUFFIX))
-                {
-                    int endIndex = resource.length() - CLASS_SUFFIX.length();
-                    String className = resource.substring(0, endIndex);
+                    final int endIndex = resource.length() - ClassFinder.CLASS_SUFFIX.length();
+                    final String className = resource.substring(0, endIndex);
                     try
                     {
                         classes.add(Class.forName(className));
                     }
-                    catch (Throwable ignore)
+                    catch (final Throwable ignore)
                     {
                         System.out.println(ignore);
                     }
@@ -124,26 +112,19 @@ public class CompatParser
         try
         {
             foundClasses = ClassFinder.find(classPackage);
-            for (Class<?> c : foundClasses)
-            {
+            for (final Class<?> c : foundClasses)
                 try
                 {
                     CompatClass comp = null;
-                    for (java.lang.reflect.Method m : c.getMethods())
-                    {
-                        if ((comp = m.getAnnotation(CompatClass.class)) != null)
-                        {
-                            initMethods.get(comp.phase()).add(m);
-                        }
-                    }
+                    for (final java.lang.reflect.Method m : c.getMethods())
+                        if ((comp = m.getAnnotation(CompatClass.class)) != null) initMethods.get(comp.phase()).add(m);
                 }
-                catch (Throwable e)
+                catch (final Throwable e)
                 {
                     System.err.println("Error with " + c);
                 }
-            }
         }
-        catch (Throwable e)
+        catch (final Throwable e)
         {
             System.err.println("Error finding compat classes: " + e);
         }

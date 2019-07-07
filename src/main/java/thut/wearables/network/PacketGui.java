@@ -1,79 +1,81 @@
 package thut.wearables.network;
 
-import java.io.IOException;
-
-import javax.xml.ws.handler.MessageContext;
-
-import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.container.SimpleNamedContainerProvider;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.network.NetworkHooks;
 import thut.wearables.EnumWearable;
 import thut.wearables.ThutWearables;
+import thut.wearables.inventory.ContainerWearables;
 
-public class PacketGui implements IMessage, IMessageHandler<PacketGui, IMessage>
+public class PacketGui extends Packet
 {
+
     public CompoundNBT data;
 
     public PacketGui()
     {
-        data = new CompoundNBT();
+        this.data = new CompoundNBT();
+    }
+
+    public PacketGui(final PacketBuffer buffer)
+    {
+
+        this.data = buffer.readCompoundTag();
+
     }
 
     @Override
-    public void toBytes(ByteBuf buffer)
+    public void handleServer(final ServerPlayerEntity player)
     {
-        PacketBuffer buf = new PacketBuffer(buffer);
-        buf.writeCompoundTag(data);
-    }
-
-    @Override
-    public void fromBytes(ByteBuf buffer)
-    {
-        PacketBuffer buf = new PacketBuffer(buffer);
-        try
+        if (this.data.contains("S"))
         {
-            data = buf.readCompoundTag();
+            final byte slot = this.data.getByte("S");
+            final ItemStack stack = ThutWearables.getWearables(player).getStackInSlot(slot);
+            if (stack != null) EnumWearable.interact(player, stack, slot);
         }
-        catch (IOException e)
+        else if (this.data.contains("close"))
         {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public IMessage onMessage(final PacketGui message, final MessageContext ctx)
-    {
-        FMLCommonHandler.instance().getMinecraftServerInstance().addScheduledTask(new Runnable()
-        {
-            @Override
-            public void run()
+            final boolean close = this.data.getBoolean("close");
+            if (close)
             {
-                processMessage(ctx.getServerHandler().player, message);
+                // player.openContainer(player.container);
             }
-        });
-        return null;
+            else
+            {
+                final LivingEntity t = player;
+                final PacketBuffer buffer = new PacketBuffer(Unpooled.buffer(0));
+                buffer.writeInt(t.getEntityId());
+                final SimpleNamedContainerProvider provider = new SimpleNamedContainerProvider((i, p,
+                        e) -> new ContainerWearables(i, p, buffer), t.getName());
+                NetworkHooks.openGui(player, provider, buf -> buf.writeInt(t.getEntityId()));
+            }
+        }
+        else
+        {
+            LivingEntity target = player;
+            if (this.data.contains("w_open_target_"))
+            {
+                final Entity mob = player.getEntityWorld().getEntityByID(this.data.getInt("w_open_target_"));
+                if (mob instanceof LivingEntity) target = (LivingEntity) mob;
+            }
+            final LivingEntity t = target;
+            final PacketBuffer buffer = new PacketBuffer(Unpooled.buffer(0));
+            buffer.writeInt(t.getEntityId());
+            final SimpleNamedContainerProvider provider = new SimpleNamedContainerProvider((i, p,
+                    e) -> new ContainerWearables(i, p, buffer), t.getName());
+            NetworkHooks.openGui(player, provider, buf -> buf.writeInt(t.getEntityId()));
+        }
     }
 
-    static void processMessage(ServerPlayerEntity player, PacketGui message)
+    @Override
+    public void write(final PacketBuffer buffer)
     {
-        if (message.data.hasNoTags())
-        {
-            player.openGui(ThutWearables.instance, -1, player.getEntityWorld(), 0, 0, 0);
-            return;
-        }
-        if (message.data.hasKey("w_open_target_"))
-        {
-            player.openGui(ThutWearables.instance, message.data.getInt("w_open_target_"), player.getEntityWorld(),
-                    0, 0, 0);
-            return;
-        }
-        byte slot = message.data.getByte("S");
-        ItemStack stack = ThutWearables.getWearables(player).getStackInSlot(slot);
-        if (stack != null) EnumWearable.interact(player, stack, slot);
+        buffer.writeCompoundTag(this.data);
     }
 }

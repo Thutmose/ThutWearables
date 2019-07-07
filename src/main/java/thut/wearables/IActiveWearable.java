@@ -2,54 +2,56 @@ package thut.wearables;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityInject;
 
 public interface IActiveWearable extends IWearable
 {
-    @CapabilityInject(IActiveWearable.class)
-    public static final Capability<IActiveWearable> WEARABLE_CAP = null;
-
-    default void onPutOn(LivingEntity player, ItemStack itemstack, EnumWearable slot, int subIndex)
-    {
-    }
-
-    default void onTakeOff(LivingEntity player, ItemStack itemstack, EnumWearable slot, int subIndex)
-    {
-    }
-
-    default void onUpdate(LivingEntity player, ItemStack itemstack, EnumWearable slot, int subIndex)
-    {
-    }
-
     public static class Default implements IActiveWearable
     {
 
         @Override
-        public EnumWearable getSlot(ItemStack stack)
+        public EnumWearable getSlot(final ItemStack stack)
         {
             return null;
         }
 
         @Override
-        public void renderWearable(EnumWearable slot, LivingEntity wearer, ItemStack stack, float partialTicks)
+        public void onPutOn(final LivingEntity player, final ItemStack itemstack, final EnumWearable slot,
+                final int subIndex)
         {
         }
 
         @Override
-        public void onPutOn(LivingEntity player, ItemStack itemstack, EnumWearable slot, int subIndex)
+        public void onTakeOff(final LivingEntity player, final ItemStack itemstack, final EnumWearable slot,
+                final int subIndex)
         {
         }
 
         @Override
-        public void onTakeOff(LivingEntity player, ItemStack itemstack, EnumWearable slot, int subIndex)
+        public void onUpdate(final LivingEntity player, final ItemStack itemstack, final EnumWearable slot,
+                final int subIndex)
         {
         }
 
         @Override
-        public void onUpdate(LivingEntity player, ItemStack itemstack, EnumWearable slot, int subIndex)
+        public void renderWearable(final EnumWearable slot, final LivingEntity wearer, final ItemStack stack,
+                final float partialTicks)
         {
         }
 
+    }
+
+    default void onPutOn(final LivingEntity player, final ItemStack itemstack, final EnumWearable slot,
+            final int subIndex)
+    {
+    }
+
+    default void onTakeOff(final LivingEntity player, final ItemStack itemstack, final EnumWearable slot,
+            final int subIndex)
+    {
+    }
+
+    default void onUpdate(final LivingEntity player, final ItemStack itemstack, final EnumWearable slot,
+            final int subIndex)
+    {
     }
 }

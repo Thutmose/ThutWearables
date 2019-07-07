@@ -1,162 +1,135 @@
 package thut.wearables;
 
-import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 
-import net.minecraft.inventory.InventoryCrafting;
-import net.minecraft.item.EnumDyeColor;
+import com.google.common.collect.Maps;
+
+import net.minecraft.inventory.CraftingInventory;
+import net.minecraft.item.DyeColor;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.item.crafting.IRecipeSerializer;
+import net.minecraft.item.crafting.SpecialRecipe;
+import net.minecraft.item.crafting.SpecialRecipeSerializer;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.Tag;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import net.minecraftforge.oredict.OreDictionary;
+import net.minecraftforge.common.Tags;
 
-public class RecipeDye implements IRecipe
+public class RecipeDye extends SpecialRecipe
 {
-    private ItemStack toRemove = ItemStack.EMPTY;
-    private ItemStack output   = ItemStack.EMPTY;
+    private static Map<DyeColor, Tag<Item>> DYETAGS = Maps.newHashMap();
 
-    ResourceLocation  registryName;
+    public static final IRecipeSerializer<RecipeDye> SERIALIZER = IRecipeSerializer.register("thut_wearables:dye",
+            new SpecialRecipeSerializer<>(RecipeDye::new));
 
-    @Override
-    public IRecipe setRegistryName(ResourceLocation name)
+    public static Map<DyeColor, Tag<Item>> getDyeTagMap()
     {
-        registryName = name;
-        return this;
+        if (RecipeDye.DYETAGS.isEmpty()) for (final DyeColor colour : DyeColor.values())
+        {
+            final ResourceLocation tag = new ResourceLocation("forge", "dyes/" + colour.getName());
+            RecipeDye.DYETAGS.put(colour, ItemTags.getCollection().getOrCreate(tag));
+        }
+        return RecipeDye.DYETAGS;
+    }
+
+    public RecipeDye(final ResourceLocation idIn)
+    {
+        super(idIn);
     }
 
     @Override
-    public ResourceLocation getRegistryName()
+    public ItemStack getCraftingResult(final CraftingInventory inv)
     {
-        return registryName;
-    }
-
-    @Override
-    public Class<IRecipe> getRegistryType()
-    {
-        return IRecipe.class;
-    }
-
-    @Override
-    public boolean matches(InventoryCrafting inv, World worldIn)
-    {
-        output = ItemStack.EMPTY;
-        toRemove = ItemStack.EMPTY;
-        boolean wearable = false;
-        boolean dye = false;
-        ItemStack dyeStack = ItemStack.EMPTY;
-        ItemStack worn = ItemStack.EMPTY;
-        int n = 0;
+        ItemStack wearable = ItemStack.EMPTY;
+        ItemStack dye = ItemStack.EMPTY;
         for (int i = 0; i < inv.getSizeInventory(); i++)
         {
-            ItemStack stack = inv.getStackInSlot(i);
-            if (CompatWrapper.isValid(stack))
+            final ItemStack stack = inv.getStackInSlot(i);
+            IWearable wear = stack.getCapability(ThutWearables.WEARABLE_CAP, null).orElse(null);
+            if (wear == null && stack.getItem() instanceof IWearable) wear = (IWearable) stack.getItem();
+            if (wear != null && wear.dyeable(stack))
             {
-                n++;
-                IWearable wear = stack.getCapability(IActiveWearable.WEARABLE_CAP, null);
-                if (wear == null && stack.getItem() instanceof IWearable) wear = (IWearable) stack.getItem();
-                if (wear != null && wear.dyeable(stack))
-                {
-                    if (wearable) return false;
-                    wearable = true;
-                    worn = stack;
-                    continue;
-                }
-                List<ItemStack> dyes = CompatWrapper.getOres("dye");
-                boolean isDye = false;
-                for (ItemStack dye1 : dyes)
-                {
-                    if (OreDictionary.itemMatches(dye1, stack, false))
-                    {
-                        isDye = true;
-                        break;
-                    }
-                }
-                if (isDye)
-                {
-                    if (dye) return false;
-                    dye = true;
-                    dyeStack = stack;
-                    continue;
-                }
-                return false;
+                wearable = stack;
+                continue;
             }
-        }
-        if (n > 2 || !wearable) return false;
-        if (dye)
-        {
-            output = worn.copy();
-            if (!output.hasTag()) output.setTag(new CompoundNBT());
-            int[] ids = OreDictionary.getOreIDs(dyeStack);
-            int colour = dyeStack.getItemDamage();
-            for (int i : ids)
+            final Tag<Item> dyeTag = Tags.Items.DYES;
+            if (stack.getItem().isIn(dyeTag))
             {
-                String name = OreDictionary.getOreName(i);
-                if (name.startsWith("dye") && name.length() > 3)
-                {
-                    String val = name.replace("dye", "").toUpperCase(Locale.ENGLISH);
-                    try
-                    {
-                        EnumDyeColor type = EnumDyeColor.valueOf(val);
-                        colour = type.getDyeDamage();
-                        break;
-                    }
-                    catch (Exception e)
-                    {
-                        e.printStackTrace();
-                    }
-                }
+                dye = stack;
+                continue;
             }
-            output.getTag().putInt("dyeColour", colour);
+            return ItemStack.EMPTY;
         }
-        else
-        {
-            output = ItemStack.EMPTY;
-        }
-        return CompatWrapper.isValid(output);
+        final ItemStack output = wearable.copy();
+        if (!output.hasTag()) output.setTag(new CompoundNBT());
+        DyeColor dyeColour = null;
+
+        final Map<DyeColor, Tag<Item>> tags = RecipeDye.getDyeTagMap();
+        for (final DyeColor colour : DyeColor.values())
+            if (dye.getItem().isIn(tags.get(colour)))
+            {
+                dyeColour = colour;
+                break;
+            }
+        output.getTag().putInt("dyeColour", dyeColour.getId());
+        return output;
     }
 
     @Override
-    public NonNullList<ItemStack> getRemainingItems(InventoryCrafting inv)
+    public NonNullList<ItemStack> getRemainingItems(final CraftingInventory inv)
     {
-        NonNullList<ItemStack> nonnulllist = NonNullList.<ItemStack> withSize(inv.getSizeInventory(), ItemStack.EMPTY);
+        final NonNullList<ItemStack> nonnulllist = NonNullList.<ItemStack> withSize(inv.getSizeInventory(),
+                ItemStack.EMPTY);
         for (int i = 0; i < nonnulllist.size(); ++i)
         {
-            ItemStack itemstack = inv.getStackInSlot(i);
-            nonnulllist.set(i, toKeep(i, itemstack, inv));
+            final ItemStack itemstack = inv.getStackInSlot(i);
+            nonnulllist.set(i, this.toKeep(i, itemstack, inv));
         }
         return nonnulllist;
     }
 
-    public ItemStack toKeep(int slot, ItemStack stackIn, InventoryCrafting inv)
+    @Override
+    public IRecipeSerializer<?> getSerializer()
     {
-        ItemStack stack = net.minecraftforge.common.ForgeHooks.getContainerItem(stackIn);
-        if (!CompatWrapper.isValid(stack) && CompatWrapper.isValid(toRemove))
+        return RecipeDye.SERIALIZER;
+    }
+
+    @Override
+    public boolean matches(final CraftingInventory inv, final World worldIn)
+    {
+        boolean wearable = false;
+        boolean dye = false;
+        for (int i = 0; i < inv.getSizeInventory(); i++)
         {
-            stack = toRemove;
-            toRemove = ItemStack.EMPTY;
+            final ItemStack stack = inv.getStackInSlot(i);
+
+            IWearable wear = stack.getCapability(ThutWearables.WEARABLE_CAP, null).orElse(null);
+            if (wear == null && stack.getItem() instanceof IWearable) wear = (IWearable) stack.getItem();
+            if (wear != null && wear.dyeable(stack))
+            {
+                if (wearable) return false;
+                wearable = true;
+                continue;
+            }
+            final Tag<Item> dyeTag = Tags.Items.DYES;
+            if (stack.getItem().isIn(dyeTag))
+            {
+                if (dye) return false;
+                dye = true;
+                continue;
+            }
+            return false;
         }
-        return stack;
+        return dye && wearable;
     }
 
-    @Override
-    public ItemStack getCraftingResult(InventoryCrafting inv)
+    public ItemStack toKeep(final int slot, final ItemStack stackIn, final CraftingInventory inv)
     {
-        return output;
-    }
-
-    @Override
-    public boolean canFit(int width, int height)
-    {
-        return true;
-    }
-
-    @Override
-    public ItemStack getRecipeOutput()
-    {
-        return output;
+        return net.minecraftforge.common.ForgeHooks.getContainerItem(stackIn);
     }
 
 }
