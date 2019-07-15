@@ -40,7 +40,6 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
@@ -166,20 +165,18 @@ public class ThutWearables
     // You can use EventBusSubscriber to automatically subscribe events on the
     // contained class (this is subscribing to the MOD
     // Event bus for receiving Registry Events)
-    @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+    @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, modid = ThutWearables.MODID)
     public static class RegistryEvents
     {
         @SubscribeEvent
         public static void registerContainers(final RegistryEvent.Register<ContainerType<?>> event)
         {
-            if (!ModLoadingContext.get().getActiveContainer().getModId().equals(ThutWearables.MODID)) return;
             event.getRegistry().register(ContainerWearables.TYPE.setRegistryName(ThutWearables.MODID, "wearables"));
         }
 
         @SubscribeEvent
         public static void registerRecipes(final RegistryEvent.Register<IRecipeSerializer<?>> event)
         {
-            if (!ModLoadingContext.get().getActiveContainer().getModId().equals(ThutWearables.MODID)) return;
             event.getRegistry().register(RecipeDye.SERIALIZER);
         }
 
