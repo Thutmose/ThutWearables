@@ -35,14 +35,14 @@ import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent.PlayerRespawnEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
 import net.minecraftforge.fml.common.thread.EffectiveSide;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -418,8 +418,8 @@ public class ThutWearables
     @SubscribeEvent
     public void startTracking(final StartTracking event)
     {
-        if (event.getTarget() instanceof LivingEntity && event.getEntityPlayer().isServerWorld()) ThutWearables.packets
+        if (event.getTarget() instanceof LivingEntity && event.getPlayer().isServerWorld()) ThutWearables.packets
                 .sendTo(new PacketSyncWearables((LivingEntity) event.getTarget()), (ServerPlayerEntity) event
-                        .getEntityPlayer());
+                        .getPlayer());
     }
 }

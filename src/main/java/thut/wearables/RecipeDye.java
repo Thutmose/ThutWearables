@@ -42,6 +42,12 @@ public class RecipeDye extends SpecialRecipe
     }
 
     @Override
+    public boolean canFit(final int width, final int height)
+    {
+        return width * height > 1;
+    }
+
+    @Override
     public ItemStack getCraftingResult(final CraftingInventory inv)
     {
         ItemStack wearable = ItemStack.EMPTY;
