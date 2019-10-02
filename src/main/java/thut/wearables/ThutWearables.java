@@ -92,7 +92,9 @@ public class ThutWearables
         @Override
         public void setupClient(final FMLClientSetupEvent event)
         {
-            ScreenManager.registerFactory(ContainerWearables.TYPE, (c, i, t) -> new GuiWearables(c, i));
+            final ScreenManager.IScreenFactory<ContainerWearables, GuiWearables> factory = (c, i,
+                    t) -> new GuiWearables(c, i);
+            ScreenManager.registerFactory(ContainerWearables.TYPE, factory);
         }
     }
 
