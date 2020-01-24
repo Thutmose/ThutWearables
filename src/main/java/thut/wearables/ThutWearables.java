@@ -66,7 +66,6 @@ import thut.wearables.network.PacketSyncWearables;
 @Mod(ThutWearables.MODID)
 public class ThutWearables
 {
-    @OnlyIn(value = Dist.CLIENT)
     public static class ClientProxy extends CommonProxy
     {
         @Override
@@ -198,6 +197,8 @@ public class ThutWearables
     @CapabilityInject(IWearableInventory.class)
     public static final Capability<IWearableInventory> WEARABLES_CAP = null;
 
+    public static final ResourceLocation WEARABLES_ITEM_TAG = new ResourceLocation(Reference.MODID, "wearable");
+
     public static final String MODID = Reference.MODID;
 
     public final static PacketHandler packets = new PacketHandler(new ResourceLocation(Reference.MODID, "comms"),
@@ -205,17 +206,8 @@ public class ThutWearables
 
     public final static CommonProxy proxy = DistExecutor.runForDist(() -> () -> new ClientProxy(),
             () -> () -> new CommonProxy());
-
-    public static ThutWearables instance;
-
-    public static Map<Integer, float[]> renderOffsets = Maps.newHashMap();
-
-    public static Map<Integer, float[]> renderOffsetsSneak = Maps.newHashMap();
-    public static int[]                 buttonPos          = { 26, 9 };
-    public static boolean               hasButton          = true;
-    public static Set<Integer>          renderBlacklist    = Sets.newHashSet();
-    public static String                configPath;
-    public static boolean               baublesCompat      = false;
+    // Holder for our config options
+    public static final Config config = new Config();
 
     static Map<CompatClass.Phase, Set<java.lang.reflect.Method>> initMethods = Maps.newHashMap();
 
@@ -271,11 +263,13 @@ public class ThutWearables
 
     public ThutWearables()
     {
+        // Register Config stuff
+        thut.core.common.config.Config.setupConfigs(ThutWearables.config, ThutWearables.MODID, ThutWearables.MODID);
+
         for (final Phase phase : Phase.values())
             ThutWearables.initMethods.put(phase, new HashSet<java.lang.reflect.Method>());
         CompatParser.findClasses("thut.wearables.compat", ThutWearables.initMethods);
         ThutWearables.doPhase(Phase.CONSTRUCT, null);
-        ThutWearables.instance = this;
 
         MinecraftForge.EVENT_BUS.register(this);
 
