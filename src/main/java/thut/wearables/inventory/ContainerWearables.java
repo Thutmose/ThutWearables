@@ -2,19 +2,21 @@ package thut.wearables.inventory;
 
 import javax.annotation.Nullable;
 
+import com.mojang.datafixers.util.Pair;
+
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.ContainerType;
+import net.minecraft.inventory.container.PlayerContainer;
 import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.network.IContainerFactory;
@@ -23,22 +25,26 @@ import thut.wearables.ThutWearables;
 
 public class ContainerWearables extends Container
 {
-    public static class ArmourInventory extends Inventory
-    {
-        final LivingEntity mob;
-
-        public ArmourInventory(final LivingEntity mob)
-        {
-            super(4);
-            this.mob = mob;
-        }
-    }
+    public static final ResourceLocation    LOCATION_BLOCKS_TEXTURE     = new ResourceLocation(
+            "textures/atlas/blocks.png");
+    public static final ResourceLocation    EMPTY_ARMOR_SLOT_HELMET     = new ResourceLocation(
+            "item/empty_armor_slot_helmet");
+    public static final ResourceLocation    EMPTY_ARMOR_SLOT_CHESTPLATE = new ResourceLocation(
+            "item/empty_armor_slot_chestplate");
+    public static final ResourceLocation    EMPTY_ARMOR_SLOT_LEGGINGS   = new ResourceLocation(
+            "item/empty_armor_slot_leggings");
+    public static final ResourceLocation    EMPTY_ARMOR_SLOT_BOOTS      = new ResourceLocation(
+            "item/empty_armor_slot_boots");
+    private static final ResourceLocation[] ARMOR_SLOT_TEXTURES         = new ResourceLocation[] {
+            ContainerWearables.EMPTY_ARMOR_SLOT_BOOTS, ContainerWearables.EMPTY_ARMOR_SLOT_LEGGINGS,
+            ContainerWearables.EMPTY_ARMOR_SLOT_CHESTPLATE, ContainerWearables.EMPTY_ARMOR_SLOT_HELMET };
 
     public static class WornSlot extends Slot
     {
         final LivingEntity     wearer;
         final EnumWearable     slot;
         final InventoryWrapper slots;
+        final ResourceLocation LOCATION;
 
         public WornSlot(final LivingEntity player, final InventoryWrapper inventoryIn, final int index,
                 final int xPosition, final int yPosition)
@@ -47,6 +53,7 @@ public class ContainerWearables extends Container
             this.slot = EnumWearable.getWearable(index);
             this.slots = inventoryIn;
             this.wearer = player;
+            this.LOCATION = new ResourceLocation(EnumWearable.getIcon(this.getSlotIndex()));
         }
 
         @Override
@@ -56,19 +63,16 @@ public class ContainerWearables extends Container
             return EnumWearable.canTakeOff(this.wearer, this.getStack(), this.getSlotIndex());
         }
 
-        @OnlyIn(Dist.CLIENT)
         @Override
-        public String getSlotTexture()
+        @OnlyIn(Dist.CLIENT)
+        public Pair<ResourceLocation, ResourceLocation> func_225517_c_()
         {
-            if (super.getSlotTexture() == null) this.setBackgroundName(EnumWearable.getIcon(this.getSlotIndex()));
-            return super.getSlotTexture();
+            return Pair.of(PlayerContainer.LOCATION_BLOCKS_TEXTURE, this.LOCATION);
         }
 
         @Override
-        /**
-         * Check if the stack is a valid item for this slot. Always true beside
-         * for the armor slots.
-         */
+        /** Check if the stack is a valid item for this slot. Always true beside
+         * for the armor slots. */
         public boolean isItemValid(@Nullable final ItemStack stack)
         {
             return this.slots.isItemValidForSlot(this.getSlotIndex(), stack);
@@ -89,18 +93,15 @@ public class ContainerWearables extends Container
         }
     }
 
-    private static final String[]                         ARMOR_SLOT_TEXTURES   = new String[] {
-            "item/empty_armor_slot_boots", "item/empty_armor_slot_leggings", "item/empty_armor_slot_chestplate",
-            "item/empty_armor_slot_helmet" };
     private static final EquipmentSlotType[]              VALID_EQUIPMENT_SLOTS = new EquipmentSlotType[] {
             EquipmentSlotType.HEAD, EquipmentSlotType.CHEST, EquipmentSlotType.LEGS, EquipmentSlotType.FEET };
     public static final ContainerType<ContainerWearables> TYPE                  = new ContainerType<>(
             (IContainerFactory<ContainerWearables>) ContainerWearables::new);
 
-    public PlayerWearables slots;
+    public PlayerWearables                                slots;
     /** Determines if inventory manipulation should be handled. */
-    public LivingEntity    wearer;
-    final boolean          hasPlayerSlots;
+    public LivingEntity                                   wearer;
+    final boolean                                         hasPlayerSlots;
 
     public ContainerWearables(final int id, final PlayerInventory player, final PacketBuffer extraData)
     {
@@ -147,35 +148,25 @@ public class ContainerWearables extends Container
 
     private void bindVanillaInventory(final PlayerInventory playerInventory)
     {
-        final IInventory armour = new ArmourInventory(this.wearer);
-
         // Player armour slots.
         for (int k = 0; k < 4; ++k)
         {
             final EquipmentSlotType entityequipmentslot = ContainerWearables.VALID_EQUIPMENT_SLOTS[k];
-            int index = 36 + 3 - k;
-
-            index = 3 - k;
-
-            this.addSlot(new Slot(armour, index, 8, 8 + k * 18)
+            this.addSlot(new Slot(playerInventory, 39 - k, 8, 8 + k * 18)
             {
-                /**
-                 * Return whether this slot's stack can be taken from this
-                 * slot.
-                 */
+                /** Return whether this slot's stack can be taken from this
+                 * slot. */
                 @Override
                 public boolean canTakeStack(final PlayerEntity playerIn)
                 {
                     final ItemStack itemstack = this.getStack();
-                    return !itemstack.isEmpty() && !playerIn.isCreative() && EnchantmentHelper.hasBindingCurse(
-                            itemstack) ? false : super.canTakeStack(playerIn);
+                    return !itemstack.isEmpty() && !playerIn.isCreative()
+                            && EnchantmentHelper.hasBindingCurse(itemstack) ? false : super.canTakeStack(playerIn);
                 }
 
-                /**
-                 * Returns the maximum stack size for a given slot (usually the
+                /** Returns the maximum stack size for a given slot (usually the
                  * same as getInventoryStackLimit(), but 1 in the case of armor
-                 * slots)
-                 */
+                 * slots) */
                 @Override
                 public int getSlotStackLimit()
                 {
@@ -185,15 +176,14 @@ public class ContainerWearables extends Container
                 @Override
                 @Nullable
                 @OnlyIn(Dist.CLIENT)
-                public String getSlotTexture()
+                public Pair<ResourceLocation, ResourceLocation> func_225517_c_()
                 {
-                    return ContainerWearables.ARMOR_SLOT_TEXTURES[entityequipmentslot.getIndex()];
+                    return Pair.of(PlayerContainer.LOCATION_BLOCKS_TEXTURE,
+                            ContainerWearables.ARMOR_SLOT_TEXTURES[entityequipmentslot.getIndex()]);
                 }
 
-                /**
-                 * Check if the stack is allowed to be placed in this slot,
-                 * used for armor slots as well as furnace fuel.
-                 */
+                /** Check if the stack is allowed to be placed in this slot,
+                 * used for armor slots as well as furnace fuel. */
                 @Override
                 public boolean isItemValid(final ItemStack stack)
                 {
@@ -217,9 +207,9 @@ public class ContainerWearables extends Container
             @Override
             @Nullable
             @OnlyIn(Dist.CLIENT)
-            public String getSlotTexture()
+            public Pair<ResourceLocation, ResourceLocation> func_225517_c_()
             {
-                return "item/empty_armor_slot_shield";
+                return Pair.of(PlayerContainer.LOCATION_BLOCKS_TEXTURE, PlayerContainer.EMPTY_ARMOR_SLOT_SHIELD);
             }
         });
     }
@@ -238,10 +228,8 @@ public class ContainerWearables extends Container
         if (!player.world.isRemote) ThutWearables.syncWearables(this.wearer);
     }
 
-    /**
-     * Called when a player shift-clicks on a slot. You must override this or
-     * you will crash when someone does that.
-     */
+    /** Called when a player shift-clicks on a slot. You must override this or
+     * you will crash when someone does that. */
     @Override
     public ItemStack transferStackInSlot(final PlayerEntity par1PlayerEntity, final int index)
     {
