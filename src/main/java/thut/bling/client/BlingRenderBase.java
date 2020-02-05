@@ -50,7 +50,8 @@ public abstract class BlingRenderBase
     protected abstract void initModels();
 
     public void renderWearable(final MatrixStack mat, final IRenderTypeBuffer buff, final EnumWearable slot,
-            final int index, final LivingEntity wearer, final ItemStack stack, final float partialTicks)
+            final int index, final LivingEntity wearer, final ItemStack stack, final float partialTicks,
+            final int brightness, final int overlay)
     {
         this.initModels();
         final IModel model = this.getModel(slot, stack);
@@ -61,31 +62,31 @@ public abstract class BlingRenderBase
         switch (slot)
         {
         case ANKLE:
-            Ankle.renderAnkle(mat, buff, wearer, stack, model, textures);
+            Ankle.renderAnkle(mat, buff, wearer, stack, model, textures, brightness, overlay);
             break;
         case BACK:
-            Back.renderBack(mat, buff, wearer, stack, model, textures);
+            Back.renderBack(mat, buff, wearer, stack, model, textures, brightness, overlay);
             break;
         case EAR:
-            Ear.renderEar(mat, buff, wearer, stack, model, textures);
+            Ear.renderEar(mat, buff, wearer, stack, model, textures, brightness, overlay);
             break;
         case EYE:
-            Eye.renderEye(mat, buff, wearer, stack, model, textures);
+            Eye.renderEye(mat, buff, wearer, stack, model, textures, brightness, overlay);
             break;
         case FINGER:
-            Finger.renderFinger(mat, buff, wearer, stack, model, textures);
+            Finger.renderFinger(mat, buff, wearer, stack, model, textures, brightness, overlay);
             break;
         case HAT:
-            Hat.renderHat(mat, buff, wearer, stack, model, textures);
+            Hat.renderHat(mat, buff, wearer, stack, model, textures, brightness, overlay);
             break;
         case NECK:
-            Neck.renderNeck(mat, buff, wearer, stack, model, textures);
+            Neck.renderNeck(mat, buff, wearer, stack, model, textures, brightness, overlay);
             break;
         case WAIST:
-            Waist.renderWaist(mat, buff, wearer, stack, model, textures);
+            Waist.renderWaist(mat, buff, wearer, stack, model, textures, brightness, overlay);
             break;
         case WRIST:
-            Wrist.renderWrist(mat, buff, wearer, stack, model, textures);
+            Wrist.renderWrist(mat, buff, wearer, stack, model, textures, brightness, overlay);
             break;
         default:
             break;

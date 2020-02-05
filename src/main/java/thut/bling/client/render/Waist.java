@@ -13,7 +13,8 @@ import thut.core.client.render.model.IModel;
 public class Waist
 {
     public static void renderWaist(final MatrixStack mat, final IRenderTypeBuffer buff, final LivingEntity wearer,
-            final ItemStack stack, final IModel model, final ResourceLocation[] textures)
+            final ItemStack stack, final IModel model, final ResourceLocation[] textures, final int brightness,
+            final int overlay)
     {
         float s, dx, dy, dz;
         dx = 0;
@@ -23,6 +24,6 @@ public class Waist
         if (wearer.getItemStackFromSlot(EquipmentSlotType.LEGS) == null) s = 0.465f;
         final Vector3f dr = new Vector3f(dx, dy, dz);
         final Vector3f ds = new Vector3f(s, s, s);
-        Util.renderStandardModelWithGem(mat, buff, stack, "main", "gem", model, textures, dr, ds);
+        Util.renderStandardModelWithGem(mat, buff, stack, "main", "gem", model, textures, dr, ds, brightness, overlay);
     }
 }

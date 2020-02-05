@@ -77,7 +77,7 @@ public class Util
 
     public static void renderStandardModelWithGem(final MatrixStack mat, final IRenderTypeBuffer buff,
             final ItemStack stack, final String colorpart, final String itempart, final IModel model,
-            ResourceLocation[] tex, final Vector3f dr, final Vector3f ds)
+            ResourceLocation[] tex, final Vector3f dr, final Vector3f ds, final int brightness, final int overlay)
     {
         if (!(model instanceof IModelCustom)) return;
         tex = tex.clone();
@@ -89,7 +89,6 @@ public class Util
             ret = DyeColor.byId(damage);
         }
         final Color colour = new Color(ret.getColorValue() + 0xFF000000);
-        final int[] col = new int[] { colour.getRed(), colour.getGreen(), colour.getBlue(), 255 };
         IExtendedModelPart part = model.getParts().get(colorpart);
 
         if (stack.hasTag() && stack.getTag().contains("gem"))
@@ -102,7 +101,7 @@ public class Util
         mat.scale(ds.x, ds.y, ds.z);
         if (part != null)
         {
-            part.setRGBAB(col);
+            part.setRGBABrO(colour.getRed(), colour.getGreen(), colour.getBlue(), 255, brightness, overlay);
             final IVertexBuilder buf1 = Util.makeBuilder(buff, tex[1]);
             renderable.renderPart(mat, buf1, colorpart);
         }

@@ -14,13 +14,14 @@ public class Body
 {
     public static void render(final MatrixStack mat, final IRenderTypeBuffer buff, final IWearable wearable,
             final EnumWearable slot, final int index, final LivingEntity wearer, final ItemStack stack,
-            final float partialTicks, final boolean thinArms, final BipedModel<?> theModel)
+            final float partialTicks, final boolean thinArms, final int brightness, final int overlay,
+            final BipedModel<?> theModel)
     {
         if (wearable == null) return;
 
         if (wearable.customOffsets())
         {
-            wearable.renderWearable(mat, buff, slot, index, wearer, stack, partialTicks);
+            wearable.renderWearable(mat, buff, slot, index, wearer, stack, partialTicks, brightness, overlay);
             return;
         }
         float[] offsetArr;
@@ -72,7 +73,7 @@ public class Body
             break;
 
         }
-        if (render) wearable.renderWearable(mat, buff, slot, index, wearer, stack, partialTicks);
+        if (render) wearable.renderWearable(mat, buff, slot, index, wearer, stack, partialTicks, brightness, overlay);
 
         mat.pop();
     }

@@ -43,7 +43,6 @@ public class WearablesRenderer<T extends LivingEntity, M extends BipedModel<T>> 
             final float limbSwing, final float limbSwingAmount, final float partialTicks, final float ageInTicks,
             final float netHeadYaw, final float headPitch)
     {
-        // TODO Auto-generated method stub
         // No Render invisible.
         if (wearer.getActivePotionEffect(Effects.INVISIBILITY) != null) return;
         // Only applies to bipeds, anyone else needs to write their own render
@@ -53,8 +52,10 @@ public class WearablesRenderer<T extends LivingEntity, M extends BipedModel<T>> 
 
         final PlayerWearables worn = ThutWearables.getWearables(wearer);
         if (worn == null) return;
-
         boolean thin = false;
+
+        // TODO find out where this comes from?
+        final int overlay = 0;
 
         if (wearer instanceof AbstractClientPlayerEntity)
             thin = ((AbstractClientPlayerEntity) wearer).getSkinType().equals("slim");
@@ -71,31 +72,40 @@ public class WearablesRenderer<T extends LivingEntity, M extends BipedModel<T>> 
             switch (slot)
             {
             case ANKLE:
-                Leg.render(mat, buff, wearable, slot, index, wearer, stack, partialTicks, thin, theModel);
+                Leg.render(mat, buff, wearable, slot, index, wearer, stack, partialTicks, thin, packedLightIn, overlay,
+                        theModel);
                 break;
             case BACK:
-                Body.render(mat, buff, wearable, slot, index, wearer, stack, partialTicks, thin, theModel);
+                Body.render(mat, buff, wearable, slot, index, wearer, stack, partialTicks, thin, packedLightIn, overlay,
+                        theModel);
                 break;
             case EAR:
-                Head.render(mat, buff, wearable, slot, index, wearer, stack, partialTicks, thin, theModel);
+                Head.render(mat, buff, wearable, slot, index, wearer, stack, partialTicks, thin, packedLightIn, overlay,
+                        theModel);
                 break;
             case EYE:
-                Head.render(mat, buff, wearable, slot, index, wearer, stack, partialTicks, thin, theModel);
+                Head.render(mat, buff, wearable, slot, index, wearer, stack, partialTicks, thin, packedLightIn, overlay,
+                        theModel);
                 break;
             case FINGER:
-                Arm.render(mat, buff, wearable, slot, index, wearer, stack, partialTicks, thin, theModel);
+                Arm.render(mat, buff, wearable, slot, index, wearer, stack, partialTicks, thin, packedLightIn, overlay,
+                        theModel);
                 break;
             case HAT:
-                Head.render(mat, buff, wearable, slot, index, wearer, stack, partialTicks, thin, theModel);
+                Head.render(mat, buff, wearable, slot, index, wearer, stack, partialTicks, thin, packedLightIn, overlay,
+                        theModel);
                 break;
             case NECK:
-                Body.render(mat, buff, wearable, slot, index, wearer, stack, partialTicks, thin, theModel);
+                Body.render(mat, buff, wearable, slot, index, wearer, stack, partialTicks, thin, packedLightIn, overlay,
+                        theModel);
                 break;
             case WAIST:
-                Body.render(mat, buff, wearable, slot, index, wearer, stack, partialTicks, thin, theModel);
+                Body.render(mat, buff, wearable, slot, index, wearer, stack, partialTicks, thin, packedLightIn, overlay,
+                        theModel);
                 break;
             case WRIST:
-                Arm.render(mat, buff, wearable, slot, index, wearer, stack, partialTicks, thin, theModel);
+                Arm.render(mat, buff, wearable, slot, index, wearer, stack, partialTicks, thin, packedLightIn, overlay,
+                        theModel);
                 break;
             default:
                 break;

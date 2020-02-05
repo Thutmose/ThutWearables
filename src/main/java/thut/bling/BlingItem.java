@@ -125,9 +125,10 @@ public class BlingItem extends Item implements IWearable
     @OnlyIn(value = Dist.CLIENT)
     @Override
     public void renderWearable(final MatrixStack mat, final IRenderTypeBuffer buff, final EnumWearable slot,
-            final int index, final LivingEntity wearer, final ItemStack stack, final float partialTicks)
+            final int index, final LivingEntity wearer, final ItemStack stack, final float partialTicks,
+            final int brightness, final int overlay)
     {
-        ThutBling.PROXY.renderWearable(mat, buff, slot, index, wearer, stack, partialTicks);
+        ThutBling.PROXY.renderWearable(mat, buff, slot, index, wearer, stack, partialTicks, brightness, overlay);
     }
 
     @Override

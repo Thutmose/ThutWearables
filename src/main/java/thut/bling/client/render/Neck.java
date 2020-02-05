@@ -20,22 +20,22 @@ public class Neck
 {
 
     public static void renderNeck(final MatrixStack mat, final IRenderTypeBuffer buff, final LivingEntity wearer,
-            final ItemStack stack, final IModel model, final ResourceLocation[] textures)
+            final ItemStack stack, final IModel model, final ResourceLocation[] textures, final int brightness,
+            final int overlay)
     {
         if (!(model instanceof IModelCustom)) return;
         final ResourceLocation[] tex = textures.clone();
         final IModelCustom renderable = (IModelCustom) model;
         DyeColor ret;
         Color colour;
-        int[] col;
         float s, dx, dy, dz;
         dx = 0;
         dy = -.0f;
         dz = -0.03f;
         s = 0.525f;
         if (wearer.getItemStackFromSlot(EquipmentSlotType.LEGS) == null) s = 0.465f;
-        if (stack.hasTag() && stack.getTag().contains("gem")) tex[0] = new ResourceLocation(stack.getTag().getString(
-                "gem"));
+        if (stack.hasTag() && stack.getTag().contains("gem"))
+            tex[0] = new ResourceLocation(stack.getTag().getString("gem"));
         else tex[0] = null;
         mat.push();
         mat.rotate(Vector3f.XP.rotationDegrees(90));
@@ -51,11 +51,10 @@ public class Neck
             ret = DyeColor.byId(damage);
         }
         colour = new Color(ret.getColorValue() + 0xFF000000);
-        col = new int[] { colour.getRed(), colour.getGreen(), colour.getBlue(), 255 };
         IExtendedModelPart part = model.getParts().get(colorpart);
         if (part != null)
         {
-            part.setRGBAB(col);
+            part.setRGBABrO(colour.getRed(), colour.getGreen(), colour.getBlue(), 255, brightness, overlay);
             mat.scale(1, 1, .1f);
             final IVertexBuilder buf1 = Util.makeBuilder(buff, tex[1]);
             renderable.renderPart(mat, buf1, colorpart);

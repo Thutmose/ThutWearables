@@ -32,7 +32,8 @@ public class Eye
             })).writeMask(new RenderState.WriteMaskState(true, false)).build(false));
 
     public static void renderEye(final MatrixStack mat, final IRenderTypeBuffer buff, final LivingEntity wearer,
-            final ItemStack stack, final IModel model, final ResourceLocation[] textures)
+            final ItemStack stack, final IModel model, final ResourceLocation[] textures, final int brightness,
+            final int overlay)
     {
         // TODO eye by model instead of texture.
         mat.push();

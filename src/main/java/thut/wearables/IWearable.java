@@ -47,5 +47,6 @@ public interface IWearable
      * @param stack
      *            - The stack being worn */
     public void renderWearable(final MatrixStack mat, final IRenderTypeBuffer buff, final EnumWearable slot,
-            final int index, final LivingEntity wearer, final ItemStack stack, final float partialTicks);
+            final int index, final LivingEntity wearer, final ItemStack stack, final float partialTicks, int brightness,
+            int overlay);
 }
